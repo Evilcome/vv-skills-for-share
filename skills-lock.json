@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "feishu-cli-read": {
+      "source": "default/public",
+      "sourceType": "byted",
+      "computedHash": "99039e0a718022e3fc4634f9ba830ee2622e874565db20caac2fd4d4119b8b26"
+    }
+  }
+}
