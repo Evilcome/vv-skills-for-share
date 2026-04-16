@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent 分享 - From Skill to Workflow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      /* ===========================================
+         THEME TOKENS
+         Creative Voltage adapted for a long-form agent talk
+         =========================================== */
+      :root {
+        --bg-primary: #071122;
+        --bg-secondary: #111527;
+        --panel-dark: rgba(17, 21, 39, 0.78);
+        --panel-soft: rgba(255, 255, 255, 0.05);
+        --text-primary: #f4f7ff;
+        --text-secondary: rgba(244, 247, 255, 0.72);
+        --text-dim: rgba(244, 247, 255, 0.52);
+        --accent-blue: #0057ff;
+        --accent-blue-deep: #0039ab;
+        --accent-neon: #d9ff34;
+        --accent-cyan: #51d5ff;
+        --accent-coral: #ff7a59;
+        --border-strong: rgba(255, 255, 255, 0.14);
+        --shadow-strong: 0 24px 80px rgba(0, 0, 0, 0.35);
+        --font-display: "Archivo", sans-serif;
+        --font-body: "Space Mono", monospace;
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        --duration-normal: 0.7s;
+        --duration-slow: 1s;
+        --title-size: clamp(1.5rem, 5vw, 4rem);
+        --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+        --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+        --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
+        --small-size: clamp(0.65rem, 1vw, 0.875rem);
+        --slide-padding: clamp(1rem, 4vw, 4rem);
+        --content-gap: clamp(0.5rem, 2vw, 2rem);
+        --element-gap: clamp(0.25rem, 1vw, 1rem);
+      }
+
+      /* ===========================================
+         RESET AND MANDATORY VIEWPORT BASE STYLES
+         From viewport-base.css
+         =========================================== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        height: 100%;
+        overflow-x: hidden;
+      }
+
+      html {
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+      }
+
+      .slide {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        scroll-snap-align: start;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .slide-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-height: 100%;
+        overflow: hidden;
+        padding: var(--slide-padding);
+      }
+
+      .card, .container, .content-box {
+        max-width: min(90vw, 1000px);
+        max-height: min(80vh, 700px);
+      }
+
+      .feature-list, .bullet-list {
+        gap: clamp(0.4rem, 1vh, 1rem);
+      }
+
+      .feature-list li, .bullet-list li {
+        font-size: var(--body-size);
+        line-height: 1.4;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+        gap: clamp(0.5rem, 1.5vw, 1rem);
+      }
+
+      img, .image-container {
+        max-width: 100%;
+        max-height: min(50vh, 400px);
+        object-fit: contain;
+      }
+
+      @media (max-height: 700px) {
+        :root {
+          --slide-padding: clamp(0.75rem, 3vw, 2rem);
+          --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+          --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+          --h2-size: clamp(1rem, 3vw, 1.75rem);
+        }
+      }
+
+      @media (max-height: 600px) {
+        :root {
+          --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+          --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+          --title-size: clamp(1.1rem, 4vw, 2rem);
+          --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+        }
+
+        .nav-dots, .keyboard-hint, .decorative {
+          display: none;
+        }
+      }
+
+      @media (max-height: 500px) {
+        :root {
+          --slide-padding: clamp(0.4rem, 2vw, 1rem);
+          --title-size: clamp(1rem, 3.5vw, 1.5rem);
+          --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+          --body-size: clamp(0.65rem, 1vw, 0.85rem);
+        }
+      }
+
+      @media (max-width: 600px) {
+        :root {
+          --title-size: clamp(1.25rem, 7vw, 2.5rem);
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.2s !important;
+        }
+
+        html {
+          scroll-behavior: auto;
+        }
+      }
+
+      /* ===========================================
+         GLOBAL ATMOSPHERE AND LAYOUT ELEMENTS
+         Shared background, chrome, and recurring decorations
+         =========================================== */
+      body {
+        background:
+          radial-gradient(circle at 15% 18%, rgba(217, 255, 52, 0.12), transparent 22%),
+          radial-gradient(circle at 78% 0%, rgba(81, 213, 255, 0.16), transparent 28%),
+          linear-gradient(135deg, #06101f 0%, #0a1731 42%, #10162a 100%);
+        color: var(--text-primary);
+        font-family: var(--font-body);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: clamp(32px, 4vw, 54px) clamp(32px, 4vw, 54px);
+        mask-image: radial-gradient(circle at center, black 40%, transparent 95%);
+        opacity: 0.28;
+      }
+
+      .progress-bar {
+        position: fixed;
+        inset: 0 auto auto 0;
+        width: 0;
+        height: 5px;
+        background: linear-gradient(90deg, var(--accent-neon), var(--accent-cyan));
+        z-index: 9999;
+        box-shadow: 0 0 18px rgba(217, 255, 52, 0.45);
+      }
+
+      .nav-dots {
+        position: fixed;
+        right: clamp(10px, 1.4vw, 18px);
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 999;
+      }
+
+      .nav-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+        background: rgba(255, 255, 255, 0.08);
+        transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+        cursor: pointer;
+      }
+
+      .nav-dot.active {
+        background: var(--accent-neon);
+        border-color: var(--accent-neon);
+        transform: scale(1.18);
+      }
+
+      .slide-number {
+        position: absolute;
+        top: clamp(18px, 2.5vw, 34px);
+        right: clamp(22px, 4vw, 48px);
+        color: rgba(255, 255, 255, 0.22);
+        font-size: clamp(1.6rem, 5vw, 4.8rem);
+        font-family: var(--font-display);
+        line-height: 0.9;
+        z-index: 1;
+      }
+
+      .slide-kicker {
+        display: inline-block;
+        font-family: var(--font-display);
+        font-weight: 700;
+        color: var(--accent-neon);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: clamp(0.68rem, 0.95vw, 0.86rem);
+        margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+      }
+
+      .section-title {
+        font-family: var(--font-display);
+        font-size: var(--h2-size);
+        line-height: 1.05;
+        max-width: 13ch;
+      }
+
+      .section-lead {
+        font-size: clamp(0.82rem, 1.4vw, 1.1rem);
+        line-height: 1.7;
+        color: var(--text-secondary);
+        max-width: 56ch;
+      }
+
+      .accent-line {
+        width: min(28vw, 260px);
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent-neon), transparent);
+        margin: clamp(0.8rem, 1.5vw, 1.2rem) 0;
+      }
+
+      .panel {
+        background: var(--panel-dark);
+        border: 1px solid var(--border-strong);
+        box-shadow: var(--shadow-strong);
+        backdrop-filter: blur(18px);
+      }
+
+      .panel-soft {
+        background: var(--panel-soft);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+      }
+
+      .metric {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding: clamp(0.85rem, 1.5vw, 1.2rem);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .metric strong {
+        font-family: var(--font-display);
+        font-size: clamp(1.2rem, 2.2vw, 2rem);
+        color: var(--accent-neon);
+        font-weight: 800;
+      }
+
+      .bullet-list {
+        display: grid;
+        list-style: none;
+        margin-top: clamp(1rem, 1.8vw, 1.4rem);
+      }
+
+      .bullet-list li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: start;
+        gap: clamp(0.5rem, 1vw, 0.85rem);
+        color: var(--text-secondary);
+      }
+
+      .bullet-list li::before {
+        content: ">";
+        color: var(--accent-neon);
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: clamp(1rem, 2.2vw, 2rem);
+        align-items: center;
+        height: 100%;
+      }
+
+      .three-col {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.8rem, 1.4vw, 1rem);
+      }
+
+      .code-window {
+        border: 1px solid rgba(217, 255, 52, 0.22);
+        background: rgba(4, 10, 20, 0.92);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: var(--shadow-strong);
+      }
+
+      .code-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+        font-size: var(--small-size);
+        color: var(--text-dim);
+      }
+
+      .code-top span:last-child {
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .dots {
+        display: inline-flex;
+        gap: 0.35rem;
+      }
+
+      .dots span {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--accent-coral);
+      }
+
+      .dots span:nth-child(2) { background: var(--accent-neon); }
+      .dots span:nth-child(3) { background: var(--accent-cyan); }
+
+      pre {
+        margin: 0;
+        padding: clamp(1rem, 1.8vw, 1.4rem);
+        font-family: var(--font-body);
+        font-size: clamp(0.68rem, 1vw, 0.86rem);
+        line-height: 1.65;
+        color: #d7e1ff;
+        white-space: pre-wrap;
+      }
+
+      .token-key { color: var(--accent-cyan); }
+      .token-value { color: var(--accent-neon); }
+      .token-comment { color: #6f84b3; }
+
+      .timeline {
+        display: grid;
+        gap: clamp(0.75rem, 1.2vw, 1rem);
+        margin-top: clamp(1rem, 1.8vw, 1.4rem);
+      }
+
+      .timeline-item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .timeline-index {
+        width: clamp(2rem, 2.6vw, 2.6rem);
+        height: clamp(2rem, 2.6vw, 2.6rem);
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--accent-neon);
+        color: #09101f;
+        font-weight: 700;
+      }
+
+      .timeline-body {
+        padding-top: 0.2rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+
+      .timeline-body strong {
+        font-family: var(--font-display);
+        font-size: clamp(0.88rem, 1vw, 1rem);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-primary);
+        display: block;
+        margin-bottom: 0.2rem;
+      }
+
+      .statement-card {
+        padding: clamp(1rem, 2vw, 1.6rem);
+        border-left: 4px solid var(--accent-neon);
+        background: rgba(255, 255, 255, 0.05);
+        font-size: clamp(0.8rem, 1.4vw, 1.02rem);
+        line-height: 1.7;
+        color: var(--text-secondary);
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 1rem;
+      }
+
+      .tag {
+        padding: 0.45rem 0.7rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        font-family: var(--font-display);
+        font-size: var(--small-size);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      .hero-slide {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+      }
+
+      .hero-left {
+        padding: clamp(1.5rem, 5vw, 4rem);
+        background: linear-gradient(180deg, rgba(0, 87, 255, 0.95) 0%, rgba(0, 66, 191, 0.95) 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-left::before,
+      .hero-left::after {
+        content: "";
+        position: absolute;
+        border: 1px dashed rgba(255, 255, 255, 0.24);
+        border-radius: 50%;
+      }
+
+      .hero-left::before {
+        width: 28vmin;
+        height: 28vmin;
+        top: 10%;
+        right: 10%;
+      }
+
+      .hero-left::after {
+        width: 18vmin;
+        height: 18vmin;
+        bottom: 12%;
+        left: 12%;
+      }
+
+      .hero-right {
+        padding: clamp(1.2rem, 3.8vw, 3rem);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: clamp(0.9rem, 1.6vw, 1.4rem);
+      }
+
+      .hero-title {
+        font-family: var(--font-display);
+        font-size: clamp(2.4rem, 7vw, 6.6rem);
+        line-height: 1.02;
+        max-width: 7ch;
+        margin-top: 10vh;
+      }
+
+      .hero-subtitle {
+        margin-top: 1.2rem;
+        max-width: 34ch;
+        font-size: clamp(0.9rem, 1.6vw, 1.25rem);
+        line-height: 1.65;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-top: 1.3rem;
+        padding: 0.7rem 0.95rem;
+        background: var(--accent-neon);
+        color: #08101c;
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .hero-stack {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .hero-card {
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .hero-card strong {
+        display: block;
+        margin-bottom: 0.45rem;
+        font-family: var(--font-display);
+        font-size: clamp(0.86rem, 1vw, 1rem);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent-neon);
+      }
+
+      .matrix-card strong {
+        font-family: var(--font-display);
+        font-size: clamp(0.88rem, 1vw, 1rem);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .chapter-title {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 6vw, 5rem);
+        line-height: 1.05;
+        max-width: 9ch;
+      }
+
+      .chapter-grid {
+        display: grid;
+        grid-template-columns: 0.8fr 1.2fr;
+        gap: clamp(1rem, 2vw, 2rem);
+        align-items: end;
+        height: 100%;
+      }
+
+      .chapter-block {
+        padding: clamp(1rem, 2vw, 1.6rem);
+        background: linear-gradient(180deg, rgba(0, 87, 255, 0.14), rgba(255, 255, 255, 0.03));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .matrix {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(0.8rem, 1.5vw, 1rem);
+        margin-top: 1rem;
+      }
+
+      .matrix-card {
+        padding: 1rem;
+        min-height: 140px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .matrix-card strong {
+        color: var(--accent-neon);
+        display: block;
+        margin-bottom: 0.55rem;
+      }
+
+      .callout {
+        padding: 1rem 1.1rem;
+        border-left: 4px solid var(--accent-coral);
+        background: rgba(255, 122, 89, 0.08);
+        color: var(--text-secondary);
+        line-height: 1.6;
+      }
+
+      .quote {
+        font-family: var(--font-display);
+        font-size: clamp(1.4rem, 3vw, 2.7rem);
+        line-height: 1.1;
+        max-width: 18ch;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(0.8rem, 1.6vw, 1rem);
+        margin-top: 1rem;
+      }
+
+      .summary-card {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .summary-card strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-family: var(--font-display);
+        font-size: clamp(0.88rem, 1vw, 1rem);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--accent-neon);
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity var(--duration-normal) var(--ease-out-expo),
+          transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .reveal-left {
+        opacity: 0;
+        transform: translateX(-44px);
+        transition:
+          opacity var(--duration-normal) var(--ease-out-expo),
+          transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .reveal-scale {
+        opacity: 0;
+        transform: scale(0.94);
+        transition:
+          opacity var(--duration-normal) var(--ease-out-expo),
+          transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .slide.visible .reveal,
+      .slide.visible .reveal-left,
+      .slide.visible .reveal-scale {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+
+      .stagger-1 { transition-delay: 0.08s; }
+      .stagger-2 { transition-delay: 0.16s; }
+      .stagger-3 { transition-delay: 0.24s; }
+      .stagger-4 { transition-delay: 0.32s; }
+      .stagger-5 { transition-delay: 0.4s; }
+
+      .edit-hotzone {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 80px;
+        height: 80px;
+        z-index: 10000;
+        cursor: pointer;
+      }
+
+      .edit-toggle {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        width: 48px;
+        height: 48px;
+        border: none;
+        border-radius: 50%;
+        background: var(--accent-neon);
+        color: #08101c;
+        font-size: 1.25rem;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 10001;
+      }
+
+      .edit-toggle.show,
+      .edit-toggle.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .edit-toggle.active {
+        transform: scale(1.05);
+      }
+
+      .edit-banner {
+        position: fixed;
+        left: 76px;
+        top: 18px;
+        padding: 0.65rem 0.9rem;
+        background: rgba(8, 16, 28, 0.92);
+        border: 1px solid rgba(217, 255, 52, 0.3);
+        color: var(--text-secondary);
+        font-size: var(--small-size);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        z-index: 10001;
+      }
+
+      .edit-banner.show,
+      .edit-banner.active {
+        opacity: 1;
+      }
+
+      body.edit-active [data-editable="true"] {
+        outline: 1px dashed rgba(217, 255, 52, 0.55);
+        outline-offset: 4px;
+        cursor: text;
+      }
+
+      .keyboard-hint {
+        position: fixed;
+        left: clamp(12px, 2vw, 18px);
+        bottom: clamp(12px, 2vw, 18px);
+        color: var(--text-dim);
+        font-size: var(--small-size);
+        z-index: 999;
+      }
+
+      @media (max-width: 900px) {
+        .hero-slide,
+        .two-col,
+        .chapter-grid,
+        .three-col,
+        .summary-grid,
+        .matrix {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-title {
+          margin-top: 4vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===========================================
+         PRESENTATION CHROME
+         Progress, navigation, editing entry, and usage hint
+         =========================================== -->
+    <div class="progress-bar" aria-hidden="true"></div>
+    <nav class="nav-dots" aria-label="Slide navigation"></nav>
+    <div class="edit-hotzone" aria-hidden="true"></div>
+    <button class="edit-toggle" id="editToggle" title="Edit mode (E)" aria-label="Toggle edit mode">✎</button>
+    <div class="edit-banner">Edit mode on · click text to edit · Ctrl+S 导出</div>
+    <div class="keyboard-hint">Arrow / Space / Swipe · E to edit</div>
+
+    <!-- ===========================================
+         SLIDE 1: TITLE
+         Opening statement sets up the agent theme for a product audience
+         =========================================== -->
+    <section class="slide visible">
+      <div class="hero-slide">
+        <div class="hero-left">
+          <div class="slide-kicker reveal stagger-1" data-editable="true">Agent Share / R&amp;D to Product</div>
+          <h1 class="hero-title reveal stagger-2" data-editable="true">Agent<br />from Skill<br />to Workflow</h1>
+          <p class="hero-subtitle reveal stagger-3" data-editable="true">从研发视角解释：agent 是什么、skill 为什么重要、为什么大多数场景 skill 已经够用，以及如何走向更自动化、更稳定的工作流。</p>
+          <div class="hero-badge reveal stagger-4" data-editable="true">Today / Demo-Driven / Step by Step</div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-stack">
+            <div class="hero-card reveal-left stagger-2">
+              <strong data-editable="true">Audience</strong>
+              <div data-editable="true">产品团队，需要建立对 agent、skill、workflow 的统一认知。</div>
+            </div>
+            <div class="hero-card reveal-left stagger-3">
+              <strong data-editable="true">Goal</strong>
+              <div data-editable="true">把“看起来很神奇”拆成“可以设计、可以复用、可以稳定运行”的系统。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 2: AGENDA
+         High-level map for a long talk with demos
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">01</div>
+      <div class="slide-content">
+        <div class="slide-kicker reveal stagger-1" data-editable="true">Agenda</div>
+        <h2 class="section-title reveal stagger-2" data-editable="true">今天从 5 个层次<br />逐步往上搭</h2>
+        <div class="accent-line reveal stagger-3"></div>
+        <div class="three-col" style="margin-top: 1rem;">
+          <div class="metric reveal stagger-2"><strong data-editable="true">1</strong><span data-editable="true">什么是 agent，不只是 prompt</span></div>
+          <div class="metric reveal stagger-3"><strong data-editable="true">2</strong><span data-editable="true">skill 如何把能力做成稳定路径</span></div>
+          <div class="metric reveal stagger-4"><strong data-editable="true">3</strong><span data-editable="true">CLI 和 server 怎么把 agent 接到真实工作里</span></div>
+          <div class="metric reveal stagger-3"><strong data-editable="true">4</strong><span data-editable="true">workflow 如何把一次成功变成多次成功</span></div>
+          <div class="metric reveal stagger-4"><strong data-editable="true">5</strong><span data-editable="true">稳定性设计如何降低偏航、提升可控性</span></div>
+          <div class="metric reveal stagger-5"><strong data-editable="true">6</strong><span data-editable="true">最后回到组织协作：产品和研发怎么一起定义 agent</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 3: CHAPTER BREAK
+         Transition into agent fundamentals
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="chapter-grid">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Chapter 1</div>
+            <h2 class="chapter-title reveal stagger-2" data-editable="true">什么是 Agent</h2>
+            <p class="section-lead reveal stagger-3" data-editable="true">如果只把它看成“会聊天的大模型”，后面的 skill、workflow、稳定性都会无从谈起。</p>
+          </div>
+          <div class="chapter-block reveal-scale stagger-4">
+            <div class="quote" data-editable="true">Agent 不是一句话，Agent 是一个运行时。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 4: WHAT IS AN AGENT
+         Core definition using system decomposition
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">02</div>
+      <div class="slide-content">
+        <div class="two-col">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Definition</div>
+            <h2 class="section-title reveal stagger-2" data-editable="true">Agent = 模型 + 上下文<br />+ 工具 + 状态 + 策略</h2>
+            <ul class="bullet-list reveal stagger-3">
+              <li data-editable="true">模型负责推理与生成，但不是全部能力来源。</li>
+              <li data-editable="true">上下文决定它“知道什么”、任务边界在哪。</li>
+              <li data-editable="true">工具让它不只回答，还能读文件、跑命令、调服务。</li>
+              <li data-editable="true">状态让多轮执行保持连续，不是每次都从零开始。</li>
+              <li data-editable="true">策略约束它如何分步、何时停下、何时升级处理。</li>
+            </ul>
+          </div>
+          <div class="code-window reveal-scale stagger-4">
+            <div class="code-top"><span class="dots"><span></span><span></span><span></span></span><span>agent-runtime.ts</span></div>
+            <pre><span class="token-comment">// mental model</span>
+{
+  <span class="token-key">model</span>: <span class="token-value">reasoning engine</span>,
+  <span class="token-key">context</span>: <span class="token-value">task + memory + files</span>,
+  <span class="token-key">tools</span>: <span class="token-value">read / search / execute</span>,
+  <span class="token-key">policy</span>: <span class="token-value">plan / verify / recover</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 5: WHY NOT JUST PROMPTS
+         Clear contrast for non-engineering listeners
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">03</div>
+      <div class="slide-content">
+        <div class="slide-kicker reveal stagger-1" data-editable="true">Contrast</div>
+        <h2 class="section-title reveal stagger-2" data-editable="true">为什么 agent 不是<br />“高级一点的 prompt”</h2>
+        <div class="matrix">
+          <div class="matrix-card reveal stagger-2">
+            <strong data-editable="true">只有 prompt</strong>
+            <div data-editable="true">一次性输入，一次性输出；成功依赖写 prompt 的人；很难复用，也很难追责。</div>
+          </div>
+          <div class="matrix-card reveal stagger-3">
+            <strong data-editable="true">有 agent</strong>
+            <div data-editable="true">能分步、能观察中间状态、能用工具、能根据结果回退或继续。</div>
+          </div>
+          <div class="matrix-card reveal stagger-3">
+            <strong data-editable="true">用户视角</strong>
+            <div data-editable="true">像是在给一个会执行任务的搭档分配工作，而不是在写一次性咒语。</div>
+          </div>
+          <div class="matrix-card reveal stagger-4">
+            <strong data-editable="true">系统视角</strong>
+            <div data-editable="true">像在设计一个有限能力、可被约束、可被验证的执行流程。</div>
+          </div>
+        </div>
+        <div class="callout reveal stagger-5" style="margin-top: 1rem;" data-editable="true">如果产品要落地，就不能只讨论“提示词技巧”，而要讨论：能力边界、工具接入、失败恢复和结果验收。</div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 6: SKILLS CHAPTER
+         Transition into the practical layer that matters most
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="chapter-grid">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Chapter 2</div>
+            <h2 class="chapter-title reveal stagger-2" data-editable="true">Skill 的作用</h2>
+            <p class="section-lead reveal stagger-3" data-editable="true">这往往是把 agent 从“聪明但飘”拉回到“可靠且可用”的第一步。</p>
+          </div>
+          <div class="chapter-block reveal-scale stagger-4">
+            <div class="quote" data-editable="true">Skill 把经验变成默认路径。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 7: WHY SKILLS MATTER
+         Encodes capability, routing, and reduced variance
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">04</div>
+      <div class="slide-content">
+        <div class="two-col">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Skill</div>
+            <h2 class="section-title reveal stagger-2" data-editable="true">Skill 本质上是在教 agent<br />“这类题该怎么做”</h2>
+            <ul class="bullet-list reveal stagger-3">
+              <li data-editable="true">给任务一个更窄、更明确的入口，减少 agent 到处试。</li>
+              <li data-editable="true">把成功样式、工具顺序、边界条件预先写进系统。</li>
+              <li data-editable="true">让不同用户获得更接近的执行质量，而不是全靠运气。</li>
+              <li data-editable="true">随着使用积累，可以持续优化 skill，而不是重复教育每个用户。</li>
+            </ul>
+          </div>
+          <div class="panel" style="padding: 1.2rem;">
+            <div class="slide-kicker reveal stagger-2" data-editable="true">Without Skill vs With Skill</div>
+            <div class="timeline">
+              <div class="timeline-item reveal stagger-2">
+                <div class="timeline-index">1</div>
+                <div class="timeline-body"><strong data-editable="true">Without</strong><span data-editable="true">先猜、再搜、再试错，路径长且不稳定。</span></div>
+              </div>
+              <div class="timeline-item reveal stagger-3">
+                <div class="timeline-index">2</div>
+                <div class="timeline-body"><strong data-editable="true">With</strong><span data-editable="true">直接命中一套成熟流程，工具和输出格式都更可预期。</span></div>
+              </div>
+              <div class="timeline-item reveal stagger-4">
+                <div class="timeline-index">3</div>
+                <div class="timeline-body"><strong data-editable="true">Result</strong><span data-editable="true">更省 token、更省时间，也更适合团队规模化使用。</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 8: SKILL DEMO
+         Makes the concept tangible with a realistic demo flow
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">05</div>
+      <div class="slide-content">
+        <div class="slide-kicker reveal stagger-1" data-editable="true">Demo / Skill</div>
+        <h2 class="section-title reveal stagger-2" data-editable="true">一个 skill demo<br />应该让人看到什么</h2>
+        <div class="three-col" style="margin-top: 1rem;">
+          <div class="statement-card reveal stagger-2" data-editable="true">输入不需要非常精确。用户只要说需求，skill 会自动补足执行路径。</div>
+          <div class="statement-card reveal stagger-3" data-editable="true">中间步骤是可理解的。不是黑盒神谕，而是可以看到搜索、读取、编辑、验证。</div>
+          <div class="statement-card reveal stagger-4" data-editable="true">输出风格是统一的。因为 skill 对结构、工具和边界都有约束。</div>
+        </div>
+        <div class="code-window reveal-scale stagger-5" style="margin-top: 1rem; max-width: 100%;">
+          <div class="code-top"><span class="dots"><span></span><span></span><span></span></span><span>demo transcript</span></div>
+          <pre><span class="token-comment">user</span>: 帮我看一下飞书文档里的需求重点
+<span class="token-comment">agent</span>: 命中 <span class="token-value">feishu-cli-read</span>
+<span class="token-comment">agent</span>: 读取文档 → 提炼结构 → 输出结论
+<span class="token-comment">effect</span>: 用户不需要知道每一步，只需要得到稳定结果</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 9: MOSTLY SKILLS ARE ENOUGH
+         Important product-facing framing to avoid overengineering
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">06</div>
+      <div class="slide-content">
+        <div class="two-col">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Pragmatism</div>
+            <h2 class="section-title reveal stagger-2" data-editable="true">大部分情况下<br />skill 就已经够用了</h2>
+            <p class="section-lead reveal stagger-3" data-editable="true">很多问题并不需要复杂的多 agent 编排。只要把高频任务的默认路径设计好，已经能覆盖大量真实需求。</p>
+            <div class="tag-row reveal stagger-4">
+              <span class="tag" data-editable="true">read docs</span>
+              <span class="tag" data-editable="true">analyze table</span>
+              <span class="tag" data-editable="true">review code</span>
+              <span class="tag" data-editable="true">generate slides</span>
+              <span class="tag" data-editable="true">summarize logs</span>
+            </div>
+          </div>
+          <div class="panel" style="padding: 1.2rem;">
+            <div class="slide-kicker reveal stagger-2" data-editable="true">Decision Rule</div>
+            <ul class="bullet-list reveal stagger-3">
+              <li data-editable="true">任务路径相对固定，skill 最适合。</li>
+              <li data-editable="true">主要价值在于稳定产出，而不是复杂协调。</li>
+              <li data-editable="true">单次执行就能闭环，不需要长期状态管理。</li>
+              <li data-editable="true">先把 skill 做好，再决定要不要升级到 workflow。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 10: CLI ROLE
+         Explains why interface matters beyond the model itself
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="chapter-grid">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Chapter 3</div>
+            <h2 class="chapter-title reveal stagger-2" data-editable="true">CLI 的作用</h2>
+            <p class="section-lead reveal stagger-3" data-editable="true">当 agent 进入真实工作流，它就需要一个“执行界面”和“操作通道”。CLI 往往是最自然的起点。</p>
+          </div>
+          <div class="chapter-block reveal-scale stagger-4">
+            <div class="quote" data-editable="true">CLI 让 agent 从对话框走进生产力工具箱。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 11: CLI VALUE
+         Mapping CLI to developer workflow and product trust
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">07</div>
+      <div class="slide-content">
+        <div class="two-col">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">CLI</div>
+            <h2 class="section-title reveal stagger-2" data-editable="true">CLI 不只是输入输出<br />而是 agent 的可操作外壳</h2>
+            <ul class="bullet-list reveal stagger-3">
+              <li data-editable="true">它让工具调用天然成立：文件、终端、git、脚本都在同一个工作面里。</li>
+              <li data-editable="true">它让过程更透明：每一步读了什么、改了什么、跑了什么都可追踪。</li>
+              <li data-editable="true">它让人机协作更顺畅：用户随时能中断、确认、修正方向。</li>
+              <li data-editable="true">它也更适合服务化：同样的动作未来可以挂到 server 或 workflow 上。</li>
+            </ul>
+          </div>
+          <div class="code-window reveal-scale stagger-4">
+            <div class="code-top"><span class="dots"><span></span><span></span><span></span></span><span>cli session</span></div>
+            <pre>$ ask "做一个 agent 分享 slides"
+&gt; detect skill: <span class="token-value">frontend-slides</span>
+&gt; ask structured questions
+&gt; generate previews
+&gt; build final deck
+&gt; open in browser</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 12: SERVER DEMO
+         Shows how CLI capabilities can become service capabilities
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">08</div>
+      <div class="slide-content">
+        <div class="slide-kicker reveal stagger-1" data-editable="true">Demo / Server</div>
+        <h2 class="section-title reveal stagger-2" data-editable="true">从 CLI 到 server：<br />把能力做成可被系统调用的接口</h2>
+        <div class="summary-grid">
+            <div class="summary-card reveal stagger-2"><strong data-editable="true">CLI Demo</strong><span data-editable="true">一个人发起，一个 agent 执行，强调交互和即时反馈。</span></div>
+            <div class="summary-card reveal stagger-3"><strong data-editable="true">Server Demo</strong><span data-editable="true">把同样能力暴露给别的系统，让流程自动触发，而不是靠人手点。</span></div>
+          <div class="summary-card reveal stagger-3"><strong data-editable="true">核心变化</strong><span data-editable="true">交互式工具变成服务式工具，要求更明确的输入、输出和错误处理。</span></div>
+          <div class="summary-card reveal stagger-4"><strong data-editable="true">产品价值</strong><span data-editable="true">能力不再只属于“会用 CLI 的人”，而可以进入更广泛的业务流程。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 13: WORKFLOW CHAPTER
+         Transition from single-task execution to automation systems
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="chapter-grid">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Chapter 4</div>
+            <h2 class="chapter-title reveal stagger-2" data-editable="true">Workflow 自动化</h2>
+            <p class="section-lead reveal stagger-3" data-editable="true">当你不满足于“今天成功一次”，而是希望“以后反复成功”，workflow 就出现了。</p>
+          </div>
+          <div class="chapter-block reveal-scale stagger-4">
+            <div class="quote" data-editable="true">Workflow 把 agent 的单点能力变成系统能力。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 14: WHY WORKFLOW
+         Explains repeatability, orchestration, and observability
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">09</div>
+      <div class="slide-content">
+        <div class="two-col">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Workflow</div>
+            <h2 class="section-title reveal stagger-2" data-editable="true">什么时候要从 skill<br />升级到 workflow</h2>
+            <ul class="bullet-list reveal stagger-3">
+              <li data-editable="true">一个任务需要多个阶段，而且阶段之间有依赖关系。</li>
+              <li data-editable="true">不止一个 agent 或服务参与，必须明确谁先做、谁验收、谁兜底。</li>
+              <li data-editable="true">需要可观测和可追踪，不能只看最终回答。</li>
+              <li data-editable="true">需要把失败场景纳入设计，而不是出错后人工救火。</li>
+            </ul>
+          </div>
+          <div class="panel" style="padding: 1.2rem;">
+            <div class="slide-kicker reveal stagger-2" data-editable="true">Upgrade Signal</div>
+            <div class="timeline">
+              <div class="timeline-item reveal stagger-2"><div class="timeline-index">A</div><div class="timeline-body"><strong data-editable="true">单步任务</strong><span data-editable="true">skill 已足够，追求高效和一致性。</span></div></div>
+              <div class="timeline-item reveal stagger-3"><div class="timeline-index">B</div><div class="timeline-body"><strong data-editable="true">多步任务</strong><span data-editable="true">开始需要状态转移、阶段校验和失败回滚。</span></div></div>
+              <div class="timeline-item reveal stagger-4"><div class="timeline-index">C</div><div class="timeline-body"><strong data-editable="true">系统任务</strong><span data-editable="true">进入 workflow 范畴，目标是自动化和稳定运营。</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 15: WORKFLOW DEMO
+         Example pipeline users can recognize immediately
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">10</div>
+      <div class="slide-content">
+        <div class="slide-kicker reveal stagger-1" data-editable="true">Demo / Workflow</div>
+        <h2 class="section-title reveal stagger-2" data-editable="true">一个 workflow demo<br />最有说服力的地方</h2>
+        <div class="timeline">
+          <div class="timeline-item reveal stagger-2"><div class="timeline-index">1</div><div class="timeline-body"><strong data-editable="true">Trigger</strong><span data-editable="true">一个需求、一个事件、一次提交，成为流程起点。</span></div></div>
+          <div class="timeline-item reveal stagger-3"><div class="timeline-index">2</div><div class="timeline-body"><strong data-editable="true">Dispatch</strong><span data-editable="true">由路由逻辑决定命中哪类 skill、哪种工具、是否需要 server 能力。</span></div></div>
+          <div class="timeline-item reveal stagger-4"><div class="timeline-index">3</div><div class="timeline-body"><strong data-editable="true">Verify</strong><span data-editable="true">中间产物被检查，不符合标准就回退或重试，而不是直接往下走。</span></div></div>
+          <div class="timeline-item reveal stagger-5"><div class="timeline-index">4</div><div class="timeline-body"><strong data-editable="true">Deliver</strong><span data-editable="true">结果自动落到正确位置，比如 PR、文档、报告或线上服务。</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 16: STABILITY CHAPTER
+         Frames reliability as design, not luck
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="chapter-grid">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Chapter 5</div>
+            <h2 class="chapter-title reveal stagger-2" data-editable="true">稳定性设计</h2>
+            <p class="section-lead reveal stagger-3" data-editable="true">越自动化，越不能把成功寄托在模型临场发挥。稳定性不是锦上添花，而是前提。</p>
+          </div>
+          <div class="chapter-block reveal-scale stagger-4">
+            <div class="quote" data-editable="true">Reliable agent = constrained agent + verified agent</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 17: STABILITY DESIGN
+         Concrete tactics for better reliability
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">11</div>
+      <div class="slide-content">
+        <div class="two-col">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Stability</div>
+            <h2 class="section-title reveal stagger-2" data-editable="true">稳定性来自约束、验证和恢复机制</h2>
+            <div class="summary-grid">
+              <div class="summary-card reveal stagger-2"><strong data-editable="true">约束输入</strong><span data-editable="true">问题分类、结构化参数、明确上下文边界。</span></div>
+              <div class="summary-card reveal stagger-3"><strong data-editable="true">约束执行</strong><span data-editable="true">规定工具顺序、限制危险动作、必要时让人确认。</span></div>
+              <div class="summary-card reveal stagger-3"><strong data-editable="true">验证输出</strong><span data-editable="true">语法检查、测试、规则校验、格式检查。</span></div>
+              <div class="summary-card reveal stagger-4"><strong data-editable="true">失败恢复</strong><span data-editable="true">重试、降级、回滚、转人工，不能让流程静默失败。</span></div>
+            </div>
+          </div>
+          <div class="statement-card reveal stagger-5" data-editable="true">可以把稳定性理解为：先尽量让 agent 少犯错；再让系统尽快发现错；最后确保即使错了也不会造成不可接受的后果。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 18: STABILITY DEMO
+         Demo framing for reliability
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">12</div>
+      <div class="slide-content">
+        <div class="slide-kicker reveal stagger-1" data-editable="true">Demo / Stability</div>
+        <h2 class="section-title reveal stagger-2" data-editable="true">一个稳定性 demo 最好展示<br />“失败被控制住了”</h2>
+        <div class="matrix">
+          <div class="matrix-card reveal stagger-2"><strong data-editable="true">Case 1</strong><div data-editable="true">agent 发现上下文不足，于是先问问题，而不是盲答。</div></div>
+          <div class="matrix-card reveal stagger-3"><strong data-editable="true">Case 2</strong><div data-editable="true">agent 试图执行危险操作，被策略层拦住并要求确认。</div></div>
+          <div class="matrix-card reveal stagger-3"><strong data-editable="true">Case 3</strong><div data-editable="true">输出不符合 schema，自动修正或退回上一阶段重试。</div></div>
+          <div class="matrix-card reveal stagger-4"><strong data-editable="true">Case 4</strong><div data-editable="true">最终失败时，系统能给出清晰原因和下一步，而不是沉默地卡住。</div></div>
+        </div>
+        <div class="callout reveal stagger-5" style="margin-top: 1rem;" data-editable="true">对产品同学来说，这比“模型偶尔很聪明”更重要，因为这决定了能力能否真正进入业务。</div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 19: COLLABORATION MODEL
+         Connects technical system design back to product collaboration
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">13</div>
+      <div class="slide-content">
+        <div class="two-col">
+          <div>
+            <div class="slide-kicker reveal stagger-1" data-editable="true">Collaboration</div>
+            <h2 class="section-title reveal stagger-2" data-editable="true">产品和研发<br />怎么一起定义 agent</h2>
+            <ul class="bullet-list reveal stagger-3">
+              <li data-editable="true">产品定义任务价值、边界和验收标准。</li>
+              <li data-editable="true">研发定义工具接入、执行路径和失败恢复机制。</li>
+              <li data-editable="true">双方共同决定哪些场景只做 skill，哪些值得做 workflow。</li>
+              <li data-editable="true">评价 agent 不能只看 demo，要看成功率、可解释性和维护成本。</li>
+            </ul>
+          </div>
+          <div class="panel" style="padding: 1.2rem;">
+            <div class="slide-kicker reveal stagger-2" data-editable="true">A Practical Split</div>
+            <div class="timeline">
+              <div class="timeline-item reveal stagger-2"><div class="timeline-index">P</div><div class="timeline-body"><strong data-editable="true">Product</strong><span data-editable="true">这件事为什么值得做，用户期望看到什么结果。</span></div></div>
+              <div class="timeline-item reveal stagger-3"><div class="timeline-index">R</div><div class="timeline-body"><strong data-editable="true">R&amp;D</strong><span data-editable="true">系统如何可靠地把这个结果做出来。</span></div></div>
+              <div class="timeline-item reveal stagger-4"><div class="timeline-index">T</div><div class="timeline-body"><strong data-editable="true">Together</strong><span data-editable="true">把成功案例抽象成 skill，把高价值链路抽象成 workflow。</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 20: SUMMARY
+         Final synthesis for the talk
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-number">14</div>
+      <div class="slide-content">
+        <div class="slide-kicker reveal stagger-1" data-editable="true">Summary</div>
+        <h2 class="section-title reveal stagger-2" data-editable="true">最后用 4 句话<br />收住今天的主题</h2>
+        <div class="summary-grid">
+          <div class="summary-card reveal stagger-2"><strong data-editable="true">1</strong><span data-editable="true">Agent 是一个运行时系统，不只是一个 prompt。</span></div>
+          <div class="summary-card reveal stagger-3"><strong data-editable="true">2</strong><span data-editable="true">Skill 是最先该做好的能力层，因为它最直接提升稳定性和复用性。</span></div>
+          <div class="summary-card reveal stagger-3"><strong data-editable="true">3</strong><span data-editable="true">Workflow 是把单点能力系统化，用于更自动化、更可观测的任务链路。</span></div>
+          <div class="summary-card reveal stagger-4"><strong data-editable="true">4</strong><span data-editable="true">稳定性设计决定了 agent 能不能从 demo 走向真实业务。</span></div>
+        </div>
+        <div class="hero-badge reveal stagger-5" style="margin-top: 1.2rem; width: fit-content;" data-editable="true">Thanks · Q&amp;A · Let’s Build Reliable Agents</div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         PRESENTATION LOGIC
+         Navigation, visibility, progress, touch, and editing
+         =========================================== -->
+    <script>
+      class SlidePresentation {
+        constructor() {
+          this.slides = Array.from(document.querySelectorAll('.slide'));
+          this.currentSlide = 0;
+          this.progressBar = document.querySelector('.progress-bar');
+          this.navDotsContainer = document.querySelector('.nav-dots');
+          this.isAnimating = false;
+          this.touchStartY = 0;
+          this.touchEndY = 0;
+          this.setupIntersectionObserver();
+          this.setupKeyboardNav();
+          this.setupTouchNav();
+          this.setupWheelNav();
+          this.setupNavDots();
+          this.updateProgressBar();
+          this.updateActiveDot();
+        }
+
+        setupIntersectionObserver() {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                this.currentSlide = this.slides.indexOf(entry.target);
+                this.updateProgressBar();
+                this.updateActiveDot();
+              }
+            });
+          }, { threshold: 0.55 });
+
+          this.slides.forEach((slide) => observer.observe(slide));
+        }
+
+        goToSlide(index) {
+          if (index < 0 || index >= this.slides.length || this.isAnimating) return;
+          this.isAnimating = true;
+          this.slides[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+          window.setTimeout(() => { this.isAnimating = false; }, 700);
+        }
+
+        nextSlide() {
+          this.goToSlide(Math.min(this.currentSlide + 1, this.slides.length - 1));
+        }
+
+        prevSlide() {
+          this.goToSlide(Math.max(this.currentSlide - 1, 0));
+        }
+
+        setupKeyboardNav() {
+          document.addEventListener('keydown', (event) => {
+            const editing = event.target && event.target.getAttribute('contenteditable') === 'true';
+            if (editing) return;
+            if (['ArrowDown', 'PageDown', ' '].includes(event.key)) {
+              event.preventDefault();
+              this.nextSlide();
+            }
+            if (['ArrowUp', 'PageUp'].includes(event.key)) {
+              event.preventDefault();
+              this.prevSlide();
+            }
+            if (event.key === 'Home') this.goToSlide(0);
+            if (event.key === 'End') this.goToSlide(this.slides.length - 1);
+          });
+        }
+
+        setupTouchNav() {
+          document.addEventListener('touchstart', (event) => {
+            this.touchStartY = event.changedTouches[0].screenY;
+          }, { passive: true });
+          document.addEventListener('touchend', (event) => {
+            this.touchEndY = event.changedTouches[0].screenY;
+            const delta = this.touchStartY - this.touchEndY;
+            if (Math.abs(delta) < 50) return;
+            if (delta > 0) this.nextSlide();
+            else this.prevSlide();
+          }, { passive: true });
+        }
+
+        setupWheelNav() {
+          let lastWheel = 0;
+          document.addEventListener('wheel', (event) => {
+            const now = Date.now();
+            if (now - lastWheel < 900) return;
+            if (Math.abs(event.deltaY) < 28) return;
+            lastWheel = now;
+            if (event.deltaY > 0) this.nextSlide();
+            else this.prevSlide();
+          }, { passive: true });
+        }
+
+        setupNavDots() {
+          this.navDotsContainer.innerHTML = '';
+          this.slides.forEach((slide, index) => {
+            const dot = document.createElement('button');
+            dot.className = 'nav-dot';
+            dot.type = 'button';
+            dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+            dot.addEventListener('click', () => this.goToSlide(index));
+            this.navDotsContainer.appendChild(dot);
+          });
+        }
+
+        updateProgressBar() {
+          const ratio = ((this.currentSlide + 1) / this.slides.length) * 100;
+          this.progressBar.style.width = `${ratio}%`;
+        }
+
+        updateActiveDot() {
+          const dots = this.navDotsContainer.querySelectorAll('.nav-dot');
+          dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === this.currentSlide);
+          });
+        }
+      }
+
+      class InlineEditor {
+        constructor() {
+          this.isActive = false;
+          this.storageKey = 'agent-slides-edit-state';
+          this.toggle = document.getElementById('editToggle');
+          this.banner = document.querySelector('.edit-banner');
+          this.editables = Array.from(document.querySelectorAll('[data-editable="true"]'));
+          this.restoreContent();
+          this.setupBindings();
+        }
+
+        setupBindings() {
+          this.toggle.addEventListener('click', () => this.toggleEditMode());
+          document.addEventListener('keydown', (event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+              if (this.isActive) {
+                event.preventDefault();
+                this.exportFile();
+              }
+            }
+            if ((event.key === 'e' || event.key === 'E') && !(event.target && event.target.getAttribute('contenteditable') === 'true')) {
+              event.preventDefault();
+              this.toggleEditMode();
+            }
+          });
+
+          this.editables.forEach((el, index) => {
+            el.dataset.editId = String(index);
+            el.addEventListener('input', () => this.saveContent());
+          });
+        }
+
+        toggleEditMode() {
+          this.isActive = !this.isActive;
+          document.body.classList.toggle('edit-active', this.isActive);
+          this.toggle.classList.toggle('active', this.isActive);
+          this.banner.classList.toggle('active', this.isActive);
+          this.banner.classList.toggle('show', this.isActive);
+          this.toggle.textContent = this.isActive ? '✓' : '✎';
+          this.editables.forEach((el) => {
+            if (this.isActive) el.setAttribute('contenteditable', 'true');
+            else el.removeAttribute('contenteditable');
+          });
+          if (!this.isActive) this.toggle.classList.remove('show');
+        }
+
+        saveContent() {
+          const payload = {};
+          this.editables.forEach((el) => {
+            payload[el.dataset.editId] = el.innerHTML;
+          });
+          localStorage.setItem(this.storageKey, JSON.stringify(payload));
+        }
+
+        restoreContent() {
+          const raw = localStorage.getItem(this.storageKey);
+          if (!raw) return;
+          try {
+            const payload = JSON.parse(raw);
+            this.editables.forEach((el, index) => {
+              const value = payload[String(index)];
+              if (typeof value === 'string') el.innerHTML = value;
+            });
+          } catch (error) {
+            console.warn('Failed to restore slide edits', error);
+          }
+        }
+
+        exportFile() {
+          const editableEls = Array.from(document.querySelectorAll('[contenteditable]'));
+          editableEls.forEach((el) => el.removeAttribute('contenteditable'));
+          document.body.classList.remove('edit-active');
+          this.toggle.classList.remove('active', 'show');
+          this.banner.classList.remove('active', 'show');
+          const originalLabel = this.toggle.textContent;
+          this.toggle.textContent = '✎';
+
+          const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+          if (this.isActive) {
+            document.body.classList.add('edit-active');
+            editableEls.forEach((el) => el.setAttribute('contenteditable', 'true'));
+            this.toggle.classList.add('active');
+            this.banner.classList.add('active');
+            this.banner.classList.add('show');
+            this.toggle.textContent = originalLabel;
+          }
+
+          const blob = new Blob([html], { type: 'text/html' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'agent-share-slides.html';
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }
+      }
+
+      const presentation = new SlidePresentation();
+      const editor = new InlineEditor();
+      const hotzone = document.querySelector('.edit-hotzone');
+      const editToggle = document.getElementById('editToggle');
+      let hideTimeout = null;
+
+      hotzone.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimeout);
+        editToggle.classList.add('show');
+      });
+
+      hotzone.addEventListener('mouseleave', () => {
+        hideTimeout = setTimeout(() => {
+          if (!editor.isActive) editToggle.classList.remove('show');
+        }, 400);
+      });
+
+      editToggle.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimeout);
+      });
+
+      editToggle.addEventListener('mouseleave', () => {
+        hideTimeout = setTimeout(() => {
+          if (!editor.isActive) editToggle.classList.remove('show');
+        }, 400);
+      });
+
+      hotzone.addEventListener('click', () => {
+        editor.toggleEditMode();
+      });
+    </script>
+  </body>
+</html>
