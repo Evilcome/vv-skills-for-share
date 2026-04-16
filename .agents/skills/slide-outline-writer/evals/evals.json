@@ -1,0 +1,38 @@
+{
+  "skill_name": "slide-outline-writer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我下周要给管理层做一个 12 分钟的 AI coding adoption 分享。现在手里只有一些散乱笔记：工程师使用率、上线速度提升、几个失败案例、培训计划。帮我先整理成一个适合做 PPT 的大纲，要求有大标题、子标题、每部分 key points，并标一下哪些地方需要补数据。",
+      "expected_output": "A management-facing outline with clear chapters, section titles, key points, and explicit missing data notes rather than a flat list of ideas.",
+      "files": [],
+      "expectations": [
+        "The skill produces a structured outline with title, chapters, sections, and key points.",
+        "The output reflects the executive audience and short presentation length.",
+        "The output identifies missing evidence or data gaps instead of hiding them."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我做一份培训 slide 的 outline。主题是新同学入职后第一周要理解我们推荐系统团队是怎么工作的。受众是校招生工程师，时长 30 分钟，希望既讲架构，也讲协作流程，还要让他们知道第一周该做什么。最终大纲之后我要发到飞书文档里。",
+      "expected_output": "A teaching-oriented onboarding deck outline that balances architecture, workflow, and first-week actions, and is ready to be published to Feishu.",
+      "files": [],
+      "expectations": [
+        "The outline is audience-aware for new graduate engineers.",
+        "The outline includes both conceptual chapters and concrete onboarding actions.",
+        "The response is suitable for later Feishu publishing with stable headings."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "这个飞书链接里已经有一版路演大纲了，投资人给我留了不少 inline comments。请读取评论，按评论修改大纲，但不要把没被评论的部分全改乱。改完后把修改摘要也给我。",
+      "expected_output": "A revision workflow that reads the current outline, checks inline comment capability, applies only targeted changes when real comments are available, and otherwise reports the limitation honestly.",
+      "files": [],
+      "expectations": [
+        "The skill treats inline comments as a real capability check, not an assumed feature.",
+        "The skill emphasizes local incremental revision instead of rewriting the whole outline.",
+        "The skill reports what changed and what could not be completed if comment retrieval is unavailable."
+      ]
+    }
+  ]
+}

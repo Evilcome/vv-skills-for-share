@@ -5,6 +5,11 @@
       "source": "default/public",
       "sourceType": "byted",
       "computedHash": "99039e0a718022e3fc4634f9ba830ee2622e874565db20caac2fd4d4119b8b26"
+    },
+    "feishu-cli-write": {
+      "source": "default/public",
+      "sourceType": "byted",
+      "computedHash": "7f03e75082e3ef43c257ffed47216c33089271d388e937b6fa65b650f117678a"
     }
   }
 }
