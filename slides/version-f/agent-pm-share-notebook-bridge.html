@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>面向产品经理的 Agent 落地分享 - Notebook Bridge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      /* ===========================================
+         THEME TOKENS
+         Notebook tabs + paper and ink editorial system
+         =========================================== */
+      :root {
+        --paper: #f6f0e4;
+        --paper-warm: #efe4d1;
+        --paper-deep: #e0d0b4;
+        --ink: #1d2b2f;
+        --ink-soft: rgba(29, 43, 47, 0.76);
+        --ink-muted: rgba(29, 43, 47, 0.52);
+        --line: rgba(29, 43, 47, 0.12);
+        --line-strong: rgba(29, 43, 47, 0.22);
+        --tab-red: #c7684a;
+        --tab-teal: #2d7570;
+        --tab-mustard: #c79a45;
+        --tab-sand: #d7b78d;
+        --white-veil: rgba(255, 251, 245, 0.72);
+        --white-strong: rgba(255, 251, 245, 0.9);
+        --shadow-soft: 0 1.4rem 3.6rem rgba(55, 46, 28, 0.12);
+        --shadow-note: 0 0.8rem 2rem rgba(55, 46, 28, 0.08);
+        --font-display: "Noto Serif SC", "Source Han Serif SC", serif;
+        --font-body: "Outfit", "PingFang SC", sans-serif;
+        --font-mono: "IBM Plex Mono", "Courier New", monospace;
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        --duration-normal: 0.65s;
+        --duration-slow: 1s;
+      }
+
+      /* ===========================================
+         RESET
+         =========================================== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+/* ===========================================
+   VIEWPORT FITTING: MANDATORY BASE STYLES
+   Include this ENTIRE file in every presentation.
+   These styles ensure slides fit exactly in the viewport.
+   =========================================== */
+
+/* 1. Lock html/body to viewport */
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
+html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+
+/* 2. Each slide = exact viewport height */
+.slide {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    overflow: hidden; /* CRITICAL: Prevent ANY overflow */
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 3. Content container with flex for centering */
+.slide-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-height: 100%;
+    overflow: hidden; /* Double-protection against overflow */
+    padding: var(--slide-padding);
+}
+
+/* 4. ALL typography uses clamp() for responsive scaling */
+:root {
+    /* Titles scale from mobile to desktop */
+    --title-size: clamp(1.5rem, 5vw, 4rem);
+    --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+    --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+
+    /* Body text */
+    --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
+    --small-size: clamp(0.65rem, 1vw, 0.875rem);
+
+    /* Spacing scales with viewport */
+    --slide-padding: clamp(1rem, 4vw, 4rem);
+    --content-gap: clamp(0.5rem, 2vw, 2rem);
+    --element-gap: clamp(0.25rem, 1vw, 1rem);
+}
+
+h1,
+h2,
+h3 {
+    line-height: 1.08;
+    text-wrap: balance;
+}
+
+p,
+li {
+    line-height: 1.45;
+}
+
+/* 5. Cards/containers use viewport-relative max sizes */
+.card, .container, .content-box {
+    max-width: min(90vw, 1000px);
+    max-height: min(80vh, 700px);
+}
+
+/* 6. Lists auto-scale with viewport */
+.feature-list, .bullet-list {
+    gap: clamp(0.4rem, 1vh, 1rem);
+}
+
+.feature-list li, .bullet-list li {
+    font-size: var(--body-size);
+    line-height: 1.4;
+}
+
+/* 7. Grids adapt to available space */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+/* 8. Images constrained to viewport */
+img, .image-container {
+    max-width: 100%;
+    max-height: min(50vh, 400px);
+    object-fit: contain;
+}
+
+.headline,
+.hero-title,
+.section-title,
+.chapter-title {
+    line-height: 1.08;
+}
+
+/* ===========================================
+   RESPONSIVE BREAKPOINTS
+   Aggressive scaling for smaller viewports
+   =========================================== */
+
+/* Short viewports (< 700px height) */
+@media (max-height: 700px) {
+    :root {
+        --slide-padding: clamp(0.75rem, 3vw, 2rem);
+        --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+        --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+        --h2-size: clamp(1rem, 3vw, 1.75rem);
+    }
+}
+
+/* Very short viewports (< 600px height) */
+@media (max-height: 600px) {
+    :root {
+        --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+        --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+        --title-size: clamp(1.1rem, 4vw, 2rem);
+        --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+    }
+
+    /* Hide non-essential elements */
+    .nav-dots, .keyboard-hint, .decorative {
+        display: none;
+    }
+}
+
+/* Extremely short (landscape phones, < 500px height) */
+@media (max-height: 500px) {
+    :root {
+        --slide-padding: clamp(0.4rem, 2vw, 1rem);
+        --title-size: clamp(1rem, 3.5vw, 1.5rem);
+        --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+        --body-size: clamp(0.65rem, 1vw, 0.85rem);
+    }
+}
+
+/* Narrow viewports (< 600px width) */
+@media (max-width: 600px) {
+    :root {
+        --title-size: clamp(1.25rem, 7vw, 2.5rem);
+    }
+
+    /* Stack grids vertically */
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===========================================
+   REDUCED MOTION
+   Respect user preferences
+   =========================================== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+
+      /* ===========================================
+         GLOBAL ATMOSPHERE
+         =========================================== */
+      body {
+        background:
+          radial-gradient(circle at 10% 12%, rgba(199, 154, 69, 0.18), transparent 22%),
+          radial-gradient(circle at 85% 14%, rgba(45, 117, 112, 0.16), transparent 20%),
+          linear-gradient(145deg, #f7f1e8 0%, #efe6d7 56%, #ddcdb4 100%);
+        color: var(--ink);
+        font-family: var(--font-body);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(92, 73, 36, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(92, 73, 36, 0.045) 1px, transparent 1px),
+          radial-gradient(circle at center, rgba(255, 255, 255, 0.18), transparent 68%);
+        background-size: clamp(1.9rem, 4vw, 3.2rem) clamp(1.9rem, 4vw, 3.2rem), auto, auto;
+        opacity: 0.34;
+        mix-blend-mode: multiply;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E");
+        opacity: 0.3;
+      }
+
+      /* ===========================================
+         NAVIGATION CHROME
+         =========================================== */
+      .progress-bar {
+        position: fixed;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: clamp(0.18rem, 0.4vw, 0.34rem);
+        background: linear-gradient(90deg, var(--tab-red), var(--tab-mustard), var(--tab-teal));
+        transform-origin: left center;
+        transform: scaleX(0);
+        z-index: 9999;
+      }
+
+      .nav-dots {
+        position: fixed;
+        right: clamp(0.7rem, 1.6vw, 1.4rem);
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.42rem, 0.9vw, 0.68rem);
+        z-index: 999;
+      }
+
+      .nav-dot {
+        width: clamp(0.56rem, 0.84vw, 0.76rem);
+        height: clamp(0.56rem, 0.84vw, 0.76rem);
+        border-radius: 50%;
+        border: 1px solid rgba(29, 43, 47, 0.24);
+        background: rgba(255, 255, 255, 0.58);
+        box-shadow: 0 0.2rem 0.6rem rgba(29, 43, 47, 0.08);
+        cursor: pointer;
+        transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+      }
+
+      .nav-dot.active {
+        background: var(--tab-red);
+        border-color: var(--tab-red);
+        transform: scale(1.2);
+      }
+
+      .scroll-hint {
+        position: fixed;
+        left: clamp(0.9rem, 2vw, 1.7rem);
+        bottom: clamp(0.8rem, 1.8vw, 1.3rem);
+        display: inline-flex;
+        align-items: center;
+        gap: clamp(0.45rem, 0.9vw, 0.7rem);
+        padding: clamp(0.55rem, 0.95vw, 0.72rem) clamp(0.82rem, 1.2vw, 1.1rem);
+        border: 1px solid var(--line-strong);
+        background: rgba(255, 251, 245, 0.82);
+        box-shadow: var(--shadow-note);
+        backdrop-filter: blur(0.7rem);
+        font-size: var(--small-size);
+        color: var(--ink-soft);
+        z-index: 998;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+
+      .scroll-hint.hidden {
+        opacity: 0;
+        transform: translateY(0.7rem);
+        pointer-events: none;
+      }
+
+      .scroll-hint strong {
+        font-family: var(--font-display);
+        color: var(--tab-teal);
+        font-size: clamp(0.84rem, 1vw, 1rem);
+      }
+
+      .hint-arrow {
+        width: 0.88rem;
+        height: 0.88rem;
+        border-right: 2px solid var(--tab-red);
+        border-bottom: 2px solid var(--tab-red);
+        transform: rotate(45deg);
+        animation: hint-bob 1.8s ease-in-out infinite;
+      }
+
+      @keyframes hint-bob {
+        0%, 100% { transform: rotate(45deg) translate(0, 0); }
+        50% { transform: rotate(45deg) translate(0.18rem, 0.18rem); }
+      }
+
+      /* ===========================================
+         REVEAL ANIMATIONS
+         =========================================== */
+      .reveal,
+      .reveal-left,
+      .reveal-scale,
+      .reveal-blur {
+        opacity: 0;
+        will-change: transform, opacity, filter;
+      }
+
+      .reveal {
+        transform: translateY(1.7rem);
+        transition: opacity var(--duration-normal) var(--ease-out-expo), transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .reveal-left {
+        transform: translateX(-2rem);
+        transition: opacity var(--duration-normal) var(--ease-out-expo), transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .reveal-scale {
+        transform: scale(0.94);
+        transition: opacity var(--duration-normal) var(--ease-out-expo), transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .reveal-blur {
+        filter: blur(0.8rem);
+        transition: opacity 0.8s var(--ease-out-expo), filter 0.8s var(--ease-out-expo);
+      }
+
+      .slide.visible .reveal,
+      .slide.visible .reveal-left,
+      .slide.visible .reveal-scale,
+      .slide.visible .reveal-blur {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+        filter: blur(0);
+      }
+
+      .reveal-delay-2 { transition-delay: 0.12s; }
+      .reveal-delay-3 { transition-delay: 0.22s; }
+      .reveal-delay-4 { transition-delay: 0.32s; }
+      .reveal-delay-5 { transition-delay: 0.42s; }
+      .reveal-delay-6 { transition-delay: 0.52s; }
+
+      /* ===========================================
+         SHARED LAYOUT ELEMENTS
+         =========================================== */
+      .slide {
+        padding-left: clamp(1.1rem, 1.8vw, 1.5rem);
+      }
+
+      .slide-content {
+        gap: clamp(0.82rem, 1.6vw, 1.45rem);
+        position: relative;
+      }
+
+      .route-line {
+        position: absolute;
+        left: clamp(0.6rem, 1.35vw, 1.02rem);
+        top: clamp(0.8rem, 2vw, 1.45rem);
+        bottom: clamp(0.8rem, 2vw, 1.45rem);
+        width: clamp(0.26rem, 0.42vw, 0.38rem);
+        border-radius: 999px;
+        background: linear-gradient(180deg, var(--tab-red), var(--tab-mustard), var(--tab-teal));
+        opacity: 0.92;
+      }
+
+      .route-line::after {
+        content: "";
+        position: absolute;
+        left: calc(100% + clamp(0.42rem, 0.8vw, 0.72rem));
+        top: clamp(0.4rem, 0.9vw, 0.72rem);
+        bottom: clamp(0.4rem, 0.9vw, 0.72rem);
+        width: 1px;
+        background: linear-gradient(180deg, rgba(29, 43, 47, 0.24), rgba(29, 43, 47, 0.05));
+      }
+
+      .slide-index {
+        position: absolute;
+        top: clamp(1rem, 2.2vw, 1.9rem);
+        right: clamp(1rem, 2.5vw, 2.3rem);
+        font-family: var(--font-display);
+        font-size: clamp(1.75rem, 4.8vw, 4.5rem);
+        line-height: 1.02;
+        color: rgba(29, 43, 47, 0.12);
+      }
+
+      .tab-stack {
+        position: absolute;
+        top: clamp(1rem, 2vw, 1.7rem);
+        left: clamp(1.8rem, 3.5vw, 3rem);
+        display: flex;
+        gap: clamp(0.38rem, 0.9vw, 0.62rem);
+      }
+
+      .tab-pill {
+        padding: clamp(0.32rem, 0.6vw, 0.46rem) clamp(0.68rem, 1vw, 0.88rem);
+        border-radius: 0.95rem 0.95rem 0.25rem 0.25rem;
+        font-family: var(--font-mono);
+        font-size: clamp(0.62rem, 0.84vw, 0.76rem);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 251, 245, 0.95);
+        box-shadow: 0 0.45rem 1.3rem rgba(29, 43, 47, 0.12);
+      }
+
+      .tab-red { background: var(--tab-red); }
+      .tab-teal { background: var(--tab-teal); }
+      .tab-mustard { background: var(--tab-mustard); }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: clamp(0.45rem, 0.9vw, 0.68rem);
+        font-family: var(--font-mono);
+        font-size: clamp(0.66rem, 0.9vw, 0.82rem);
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--tab-teal);
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: clamp(1rem, 2vw, 1.8rem);
+        height: 1px;
+        background: linear-gradient(90deg, var(--tab-red), transparent);
+      }
+
+      .headline {
+        font-family: var(--font-display);
+        font-size: clamp(2.15rem, 5.9vw, 5.3rem);
+        line-height: 1.08;
+        letter-spacing: -0.04em;
+        max-width: 11ch;
+      }
+
+      .section-title {
+        font-family: var(--font-display);
+        font-size: clamp(1.65rem, 3.5vw, 3.05rem);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        max-width: 15ch;
+      }
+
+      .lead {
+        max-width: 64ch;
+        font-size: clamp(0.9rem, 1.42vw, 1.08rem);
+        line-height: 1.64;
+        color: var(--ink-soft);
+      }
+
+      .kicker {
+        font-family: var(--font-mono);
+        font-size: clamp(0.68rem, 0.9vw, 0.8rem);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--tab-red);
+      }
+
+      .accent-rule {
+        width: min(24vw, 12rem);
+        height: clamp(0.16rem, 0.34vw, 0.24rem);
+        background: linear-gradient(90deg, var(--tab-red), var(--tab-mustard));
+      }
+
+      .panel,
+      .paper-card,
+      .note-card,
+      .quote-card,
+      .workflow-shell,
+      .table-shell,
+      .metric-box,
+      .step-card {
+        background: var(--white-veil);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow-soft);
+        backdrop-filter: blur(0.8rem);
+      }
+
+      .panel-strong {
+        background: var(--white-strong);
+        border: 1px solid var(--line-strong);
+      }
+
+      .title-grid,
+      .two-col {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: clamp(1rem, 2vw, 1.8rem);
+        align-items: stretch;
+        height: 100%;
+      }
+
+      .three-col {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.78rem, 1.2vw, 1rem);
+      }
+
+      .quad-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(0.78rem, 1.2vw, 1rem);
+      }
+
+      .split-3070 {
+        display: grid;
+        grid-template-columns: 0.72fr 1.28fr;
+        gap: clamp(0.9rem, 1.8vw, 1.6rem);
+        align-items: stretch;
+      }
+
+      .paper-card,
+      .note-card,
+      .quote-card,
+      .workflow-shell,
+      .table-shell,
+      .metric-box,
+      .step-card {
+        padding: clamp(0.9rem, 1.45vw, 1.24rem);
+        border-radius: clamp(1rem, 1.5vw, 1.3rem);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.62rem, 1vw, 0.9rem);
+      }
+
+      .bullet-list {
+        list-style: none;
+        display: grid;
+        gap: clamp(0.45rem, 0.95vh, 0.78rem);
+        max-width: 62ch;
+      }
+
+      .bullet-list li {
+        position: relative;
+        padding-left: clamp(1rem, 1.4vw, 1.25rem);
+        color: var(--ink-soft);
+        font-size: clamp(0.82rem, 1.25vw, 1rem);
+      }
+
+      .bullet-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.7em;
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--tab-red), var(--tab-mustard));
+        box-shadow: 0 0 0 0.16rem rgba(199, 154, 69, 0.16);
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: clamp(0.4rem, 0.8vw, 0.65rem);
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: clamp(0.34rem, 0.7vw, 0.5rem) clamp(0.62rem, 0.95vw, 0.88rem);
+        border-radius: 999px;
+        border: 1px solid rgba(29, 43, 47, 0.12);
+        background: rgba(255, 251, 245, 0.72);
+        font-family: var(--font-mono);
+        font-size: clamp(0.64rem, 0.82vw, 0.76rem);
+        color: var(--ink-soft);
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.72rem, 1.1vw, 0.9rem);
+      }
+
+      .stat-number {
+        font-family: var(--font-display);
+        font-size: clamp(1.45rem, 2.9vw, 2.8rem);
+        line-height: 1;
+        color: var(--tab-red);
+      }
+
+      .stat-label {
+        font-size: clamp(0.74rem, 0.95vw, 0.86rem);
+        color: var(--ink-muted);
+      }
+
+      /* ===========================================
+         HERO AND TITLE VISUALS
+         =========================================== */
+      .title-slide .slide-content {
+        justify-content: center;
+      }
+
+      .notebook-sheet {
+        position: relative;
+        padding: clamp(1.15rem, 2vw, 1.7rem);
+        border-radius: clamp(1.2rem, 1.8vw, 1.6rem);
+        background:
+          linear-gradient(180deg, rgba(255, 251, 245, 0.96), rgba(250, 244, 236, 0.92)),
+          linear-gradient(90deg, rgba(29, 43, 47, 0.04) 0, rgba(29, 43, 47, 0.04) 1px, transparent 1px, transparent 100%);
+        border: 1px solid rgba(29, 43, 47, 0.14);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+      }
+
+      .notebook-sheet::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          repeating-linear-gradient(180deg, transparent 0, transparent clamp(1.4rem, 2.2vh, 1.72rem), rgba(45, 117, 112, 0.1) clamp(1.4rem, 2.2vh, 1.72rem), rgba(45, 117, 112, 0.1) calc(clamp(1.4rem, 2.2vh, 1.72rem) + 1px));
+        opacity: 0.78;
+        pointer-events: none;
+      }
+
+      .notebook-sheet::after {
+        content: "";
+        position: absolute;
+        left: clamp(1.4rem, 2.4vw, 2rem);
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: rgba(199, 104, 74, 0.22);
+      }
+
+      .hero-visual {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: clamp(0.8rem, 1.4vw, 1.1rem);
+        min-height: 0;
+      }
+
+      .bridge-map {
+        position: relative;
+        min-height: clamp(16rem, 38vh, 24rem);
+        border-radius: clamp(1rem, 1.4vw, 1.25rem);
+        background:
+          linear-gradient(180deg, rgba(255, 250, 243, 0.92), rgba(240, 230, 214, 0.84));
+        border: 1px solid rgba(29, 43, 47, 0.12);
+        overflow: hidden;
+      }
+
+      .bridge-map::before {
+        content: "";
+        position: absolute;
+        inset: 8% 10%;
+        border-radius: 1.2rem;
+        border: 1px dashed rgba(29, 43, 47, 0.16);
+      }
+
+      .bridge-route {
+        position: absolute;
+        left: 14%;
+        right: 12%;
+        top: 24%;
+        bottom: 18%;
+      }
+
+      .bridge-route svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .route-node {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        gap: 0.26rem;
+        align-items: flex-start;
+        padding: 0.52rem 0.66rem;
+        border-radius: 0.95rem;
+        background: rgba(255, 251, 245, 0.95);
+        border: 1px solid rgba(29, 43, 47, 0.14);
+        box-shadow: var(--shadow-note);
+        max-width: 10rem;
+      }
+
+      .route-node strong {
+        font-size: clamp(0.76rem, 0.95vw, 0.9rem);
+      }
+
+      .route-node span {
+        font-size: clamp(0.66rem, 0.8vw, 0.76rem);
+        color: var(--ink-muted);
+      }
+
+      .node-1 { top: 14%; left: 3%; }
+      .node-2 { top: 3%; right: 12%; }
+      .node-3 { bottom: 12%; left: 18%; }
+      .node-4 { bottom: 2%; right: 5%; }
+
+      .hero-notes {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(0.68rem, 1vw, 0.85rem);
+      }
+
+      .hero-note {
+        padding: clamp(0.72rem, 1vw, 0.9rem);
+        border-radius: 0.95rem;
+        background: rgba(255, 251, 245, 0.82);
+        border: 1px solid rgba(29, 43, 47, 0.12);
+      }
+
+      .hero-note strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: clamp(0.8rem, 1.02vw, 0.94rem);
+      }
+
+      .hero-note p {
+        font-size: clamp(0.72rem, 0.95vw, 0.86rem);
+        line-height: 1.55;
+        color: var(--ink-soft);
+      }
+
+      /* ===========================================
+         PROCESS VISUALS
+         =========================================== */
+      .process-flow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(0.7rem, 1.1vw, 0.9rem);
+        align-items: stretch;
+      }
+
+      .flow-step {
+        position: relative;
+        padding: clamp(0.85rem, 1.25vw, 1.05rem);
+        border-radius: 1.05rem;
+        background: rgba(255, 251, 245, 0.88);
+        border: 1px solid rgba(29, 43, 47, 0.13);
+        box-shadow: var(--shadow-note);
+      }
+
+      .flow-step::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: calc(-1 * clamp(0.52rem, 0.7vw, 0.64rem));
+        width: clamp(0.8rem, 1vw, 1rem);
+        height: 2px;
+        background: linear-gradient(90deg, var(--tab-mustard), var(--tab-teal));
+      }
+
+      .flow-step:last-child::after {
+        display: none;
+      }
+
+      .flow-no {
+        width: clamp(1.6rem, 2vw, 2rem);
+        height: clamp(1.6rem, 2vw, 2rem);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: clamp(0.72rem, 0.9vw, 0.84rem);
+        color: #fff;
+        background: linear-gradient(135deg, var(--tab-red), var(--tab-teal));
+        margin-bottom: 0.6rem;
+      }
+
+      .flow-step h3 {
+        font-size: clamp(0.88rem, 1.2vw, 1.05rem);
+        margin-bottom: 0.4rem;
+      }
+
+      .flow-step p {
+        font-size: clamp(0.72rem, 0.96vw, 0.86rem);
+        line-height: 1.55;
+        color: var(--ink-soft);
+      }
+
+      .workflow-bridge {
+        position: relative;
+        height: clamp(13.5rem, 30vh, 18rem);
+        border-radius: 1.15rem;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(255, 250, 243, 0.94), rgba(237, 228, 212, 0.86));
+        border: 1px solid rgba(29, 43, 47, 0.12);
+      }
+
+      .workflow-bridge::before,
+      .workflow-bridge::after {
+        content: "";
+        position: absolute;
+        left: 12%;
+        right: 12%;
+        height: 2px;
+        background: rgba(29, 43, 47, 0.12);
+      }
+
+      .workflow-bridge::before { top: 34%; }
+      .workflow-bridge::after { top: 66%; }
+
+      .bridge-column {
+        position: absolute;
+        top: 12%;
+        bottom: 12%;
+        width: 2px;
+        background: rgba(29, 43, 47, 0.08);
+      }
+
+      .bridge-column.left { left: 19%; }
+      .bridge-column.right { right: 19%; }
+
+      .bridge-stage {
+        position: absolute;
+        width: clamp(7rem, 12vw, 9.2rem);
+        padding: clamp(0.6rem, 0.9vw, 0.78rem);
+        border-radius: 1rem;
+        background: rgba(255, 251, 245, 0.95);
+        border: 1px solid rgba(29, 43, 47, 0.14);
+        box-shadow: var(--shadow-note);
+      }
+
+      .bridge-stage strong {
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: clamp(0.78rem, 0.94vw, 0.9rem);
+      }
+
+      .bridge-stage span {
+        font-size: clamp(0.66rem, 0.8vw, 0.76rem);
+        color: var(--ink-muted);
+      }
+
+      .stage-a { left: 8%; top: 16%; }
+      .stage-b { left: 38%; top: 18%; }
+      .stage-c { right: 8%; top: 14%; }
+      .stage-d { left: 18%; bottom: 12%; }
+      .stage-e { right: 18%; bottom: 12%; }
+
+      /* ===========================================
+         TABLES AND MATRICES
+         =========================================== */
+      .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: clamp(0.72rem, 0.96vw, 0.86rem);
+      }
+
+      .comparison-table th,
+      .comparison-table td {
+        padding: clamp(0.58rem, 0.84vw, 0.78rem);
+        border: 1px solid rgba(29, 43, 47, 0.1);
+        vertical-align: top;
+        text-align: left;
+      }
+
+      .comparison-table th {
+        background: rgba(45, 117, 112, 0.08);
+        font-family: var(--font-mono);
+        font-size: clamp(0.68rem, 0.84vw, 0.78rem);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--tab-teal);
+      }
+
+      .comparison-table td strong {
+        color: var(--ink);
+      }
+
+      .score-good { color: var(--tab-teal); font-weight: 700; }
+      .score-mid { color: var(--tab-mustard); font-weight: 700; }
+      .score-warn { color: var(--tab-red); font-weight: 700; }
+
+      /* ===========================================
+         SPECIAL COMPONENTS
+         =========================================== */
+      .matrix-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: clamp(0.9rem, 1.6vw, 1.45rem);
+        align-items: stretch;
+      }
+
+      .matrix-side {
+        display: grid;
+        gap: clamp(0.72rem, 1vw, 0.9rem);
+      }
+
+      .sticky-note {
+        position: relative;
+        padding: clamp(0.82rem, 1.1vw, 0.95rem);
+        border-radius: 0.4rem 1rem 0.5rem 0.9rem;
+        background: linear-gradient(180deg, #fff7c8, #f1df8d);
+        box-shadow: 0 0.7rem 1.6rem rgba(121, 98, 29, 0.16);
+        transform: rotate(-1.4deg);
+      }
+
+      .sticky-note::before {
+        content: "";
+        position: absolute;
+        top: -0.35rem;
+        left: 1rem;
+        width: 2.1rem;
+        height: 0.7rem;
+        background: rgba(255, 255, 255, 0.42);
+        border: 1px solid rgba(29, 43, 47, 0.08);
+        transform: rotate(-6deg);
+      }
+
+      .sticky-note h3 {
+        font-size: clamp(0.86rem, 1.12vw, 1rem);
+        margin-bottom: 0.38rem;
+      }
+
+      .sticky-note p {
+        font-size: clamp(0.72rem, 0.94vw, 0.84rem);
+        line-height: 1.55;
+        color: rgba(66, 55, 28, 0.84);
+      }
+
+      .quote-large {
+        font-family: var(--font-display);
+        font-size: clamp(1.44rem, 2.9vw, 2.9rem);
+        line-height: 1.12;
+        letter-spacing: -0.03em;
+        max-width: 11ch;
+      }
+
+      .chapter-band {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.3rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(45, 117, 112, 0.1);
+        font-family: var(--font-mono);
+        font-size: clamp(0.62rem, 0.8vw, 0.74rem);
+        color: var(--tab-teal);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .footer-note {
+        margin-top: auto;
+        font-size: clamp(0.68rem, 0.84vw, 0.78rem);
+        color: var(--ink-muted);
+      }
+
+      /* ===========================================
+         MOBILE AND HEIGHT ADJUSTMENTS
+         =========================================== */
+      @media (max-width: 980px) {
+        .title-grid,
+        .two-col,
+        .matrix-grid,
+        .split-3070,
+        .process-flow,
+        .three-col,
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-step::after {
+          display: none;
+        }
+
+        .hero-notes,
+        .quad-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-height: 700px) {
+        .bridge-map { min-height: clamp(13.2rem, 33vh, 18rem); }
+        .workflow-bridge { height: clamp(11rem, 28vh, 15rem); }
+        .headline { max-width: 12ch; }
+      }
+
+      @media (max-height: 600px) {
+        .tab-stack,
+        .scroll-hint { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===========================================
+         GLOBAL PRESENTATION UI
+         =========================================== -->
+    <div class="progress-bar" aria-hidden="true"></div>
+    <nav class="nav-dots" aria-label="Slides navigation"></nav>
+    <div class="scroll-hint" id="scrollHint"><strong>Scroll</strong><span>滚动或按方向键继续</span><span class="hint-arrow" aria-hidden="true"></span></div>
+
+    <!-- ===========================================
+         SLIDE 1: TITLE
+         =========================================== -->
+    <section class="slide title-slide">
+      <div class="route-line"></div>
+      <div class="tab-stack" aria-hidden="true">
+        <span class="tab-pill tab-red">agent</span>
+        <span class="tab-pill tab-mustard">skill</span>
+        <span class="tab-pill tab-teal">workflow</span>
+      </div>
+      <div class="slide-index">01</div>
+      <div class="slide-content title-grid">
+        <div class="notebook-sheet reveal-scale">
+          <div class="eyebrow reveal">Internal Share / PM Audience</div>
+          <div class="accent-rule reveal reveal-delay-2"></div>
+          <h1 class="headline reveal reveal-delay-2">面向产品经理的 Agent 落地分享：从 Skill 到 Workflow</h1>
+          <p class="lead reveal reveal-delay-3">不是先追求最复杂的 Agent 架构，而是先建立一套能拆问题、能控流程、能验结果的落地判断。</p>
+          <div class="tag-row reveal reveal-delay-4">
+            <span class="tag">15-20 分钟</span>
+            <span class="tag">内部方法论分享</span>
+            <span class="tag">产品视角</span>
+          </div>
+          <div class="footer-note reveal reveal-delay-5">Notebook Bridge / Paper &amp; Ink editorial deck</div>
+        </div>
+        <div class="hero-visual reveal-blur reveal-delay-3">
+          <div class="bridge-map panel-strong">
+            <div class="bridge-route" aria-hidden="true">
+              <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 78C20 60 28 44 40 41C51 38 55 57 66 56C77 55 82 30 92 22" stroke="#C7684A" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2 6"/>
+                <path d="M12 74C22 66 29 73 41 70C53 67 58 52 69 49C81 45 84 56 92 66" stroke="#2D7570" stroke-width="2.8" stroke-linecap="round"/>
+                <circle cx="12" cy="74" r="3.2" fill="#C7684A"/>
+                <circle cx="41" cy="70" r="3.2" fill="#C79A45"/>
+                <circle cx="69" cy="49" r="3.2" fill="#2D7570"/>
+                <circle cx="92" cy="66" r="3.2" fill="#1D2B2F"/>
+              </svg>
+            </div>
+            <div class="route-node node-1"><strong>问题拆分</strong><span>先拆而不是先堆复杂度</span></div>
+            <div class="route-node node-2"><strong>能力封装</strong><span>Skill 是稳定能力单元</span></div>
+            <div class="route-node node-3"><strong>中间确认</strong><span>Workflow 让协作变可控</span></div>
+            <div class="route-node node-4"><strong>结果验收</strong><span>产物可评估、可迭代</span></div>
+          </div>
+          <div class="hero-notes">
+            <div class="hero-note"><strong>今天要解决</strong><p>如何用产品经理熟悉的语言理解 Agent 落地，而不是停留在技术术语。</p></div>
+            <div class="hero-note"><strong>核心命题</strong><p>复杂问题未必要更长链路，常常更需要更好的 Skill 与 Workflow 设计。</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 2: WHY COMPLEXITY BIAS
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">02</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">Chapter 1 / 先回答一个产品问题</div>
+          <h2 class="section-title reveal reveal-delay-2">为什么很多人一提 Agent，就先想到复杂链路</h2>
+          <p class="lead reveal reveal-delay-3">常见直觉是：要做 Agent，就得规划、多轮决策、调用很多工具、串很长链路。于是 Agent 被理解成高门槛工程系统，而不是可拆解的能力组合。</p>
+          <ul class="bullet-list reveal reveal-delay-4">
+            <li>讨论容易停在概念层，听起来先进，但落不到具体业务动作。</li>
+            <li>产品经理会天然把它视作“之后再说”的复杂能力，而不是现在就能开始验证的方法。</li>
+            <li>一旦默认复杂架构先行，就很难从高频小问题里积累可复用经验。</li>
+          </ul>
+        </div>
+        <div class="quote-card panel-strong reveal-scale reveal-delay-5">
+          <div class="kicker">常见误区</div>
+          <div class="quote-large">把 Agent 理解成“大而全系统”，会直接压缩产品试错空间。</div>
+          <div class="sticky-note">
+            <h3>PM 的风险</h3>
+            <p>当讨论先被架构体量绑住，团队往往在真正进入验证前，就先把机会成本抬高了。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 3: CORE JUDGMENT
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">03</div>
+      <div class="slide-content split-3070">
+        <div class="paper-card panel-strong reveal-left">
+          <div class="chapter-band">Core View</div>
+          <div class="quote-large">很多真实问题，不需要先追求复杂 Agent 架构。</div>
+        </div>
+        <div class="quad-grid">
+          <div class="paper-card reveal reveal-delay-2">
+            <div class="kicker">判断 1</div>
+            <h3>先拆 Skill</h3>
+            <p class="lead">更有效的起点往往是：把问题拆成边界清晰、职责明确的可复用能力。</p>
+          </div>
+          <div class="paper-card reveal reveal-delay-3">
+            <div class="kicker">判断 2</div>
+            <h3>再组织流程</h3>
+            <p class="lead">当任务跨越多个阶段时，再用 Workflow 串联、校验、协作，而不是一把生成到底。</p>
+          </div>
+          <div class="paper-card reveal reveal-delay-4">
+            <div class="kicker">判断 3</div>
+            <h3>重点看可验</h3>
+            <p class="lead">对 PM 来说，关键不是懂完所有技术细节，而是会判断问题怎么拆、流程怎么控、结果怎么验。</p>
+          </div>
+          <div class="paper-card reveal reveal-delay-5">
+            <div class="kicker">落地价值</div>
+            <h3>从可验证开始</h3>
+            <p class="lead">先做出稳定命中高频问题的能力单元，再逐步扩展复杂度，是更现实的产品路径。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 4: AGENT IN PM LANGUAGE
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">04</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">Chapter 2 / 用产品经理熟悉的语言理解 Agent</div>
+          <h2 class="section-title reveal reveal-delay-2">把 Agent 看成“角色 + 工具 + 交付标准”</h2>
+          <ul class="bullet-list reveal reveal-delay-3">
+            <li><strong>Skill</strong> 可以理解为一个职责定义清晰、可复用的角色能力。</li>
+            <li><strong>Tool</strong> 是这个角色调用的外部能力，比如读文件、生成页面、写文档。</li>
+            <li><strong>稳定性</strong> 不是只看模型强不强，而是输入边界、工具约束、输出标准是否清晰。</li>
+          </ul>
+        </div>
+        <div class="three-col">
+          <div class="step-card reveal-scale reveal-delay-2">
+            <div class="flow-no">R</div>
+            <h3>Role</h3>
+            <p>知道自己该解决什么问题，不抢别的任务。</p>
+          </div>
+          <div class="step-card reveal-scale reveal-delay-3">
+            <div class="flow-no">T</div>
+            <h3>Tool</h3>
+            <p>能调用哪些外部能力，边界有多大，失败怎么处理。</p>
+          </div>
+          <div class="step-card reveal-scale reveal-delay-4">
+            <div class="flow-no">D</div>
+            <h3>Definition</h3>
+            <p>交付物长什么样、算不算通过、能不能交接给下一环。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 5: WORKFLOW AS PRODUCT PROCESS
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">05</div>
+      <div class="slide-content">
+        <div class="eyebrow reveal">Workflow / 不是技术炫技</div>
+        <h2 class="section-title reveal reveal-delay-2">Workflow 更像产品流程设计，而不只是技术编排</h2>
+        <div class="process-flow reveal reveal-delay-3">
+          <div class="flow-step">
+            <div class="flow-no">1</div>
+            <h3>Planning</h3>
+            <p>先对齐目标、范围、成功标准，避免还没理解任务就直接生成。</p>
+          </div>
+          <div class="flow-step">
+            <div class="flow-no">2</div>
+            <h3>Task List</h3>
+            <p>把复杂任务拆成几个可执行单元，每一步都能被看见和调整。</p>
+          </div>
+          <div class="flow-step">
+            <div class="flow-no">3</div>
+            <h3>Review</h3>
+            <p>在关键节点确认方向，让结构问题尽早暴露，而不是尾部返工。</p>
+          </div>
+          <div class="flow-step">
+            <div class="flow-no">4</div>
+            <h3>Release Check</h3>
+            <p>上线前检查结果完整性与可交付性，让产物真正进入业务流程。</p>
+          </div>
+        </div>
+        <div class="workflow-bridge panel reveal-scale reveal-delay-4">
+          <div class="bridge-column left"></div>
+          <div class="bridge-column right"></div>
+          <div class="bridge-stage stage-a"><strong>目标与范围</strong><span>先统一问题定义</span></div>
+          <div class="bridge-stage stage-b"><strong>阶段产物</strong><span>中间件就是控制点</span></div>
+          <div class="bridge-stage stage-c"><strong>交付形式</strong><span>谁接、怎么用</span></div>
+          <div class="bridge-stage stage-d"><strong>协作介入</strong><span>在适合阶段插人</span></div>
+          <div class="bridge-stage stage-e"><strong>返工控制</strong><span>问题定位更清楚</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 6: THREE PM CRITERIA
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">06</div>
+      <div class="slide-content matrix-grid">
+        <div class="table-shell panel-strong reveal-scale">
+          <div class="kicker">PM 最该关注的三个判断标准</div>
+          <table class="comparison-table" aria-label="产品经理判断标准矩阵">
+            <thead>
+              <tr>
+                <th>判断点</th>
+                <th>应该追问什么</th>
+                <th>如果忽略会怎样</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>值不值得拆成 Skill</strong></td>
+                <td>这是高频、边界清晰、可复用的问题吗？</td>
+                <td>容易把多类任务塞进一个大 Prompt，后续难维护。</td>
+              </tr>
+              <tr>
+                <td><strong>何时插入中间确认</strong></td>
+                <td>哪个阶段最容易方向错、返工贵、多人要协作？</td>
+                <td>一次生成失败后，很难判断问题出在哪一层。</td>
+              </tr>
+              <tr>
+                <td><strong>产物能否被评估与交接</strong></td>
+                <td>结果是否有结构化标准，能否被 review、复用、迭代？</td>
+                <td>只看 demo 成功，无法沉淀为长期能力。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="matrix-side">
+          <div class="sticky-note reveal reveal-delay-3">
+            <h3>一句话翻译</h3>
+            <p>PM 不必先学最复杂的 Agent 术语，但一定要会判断：问题拆得对不对，流程卡点放得对不对。</p>
+          </div>
+          <div class="paper-card reveal reveal-delay-4">
+            <div class="kicker">判断顺序建议</div>
+            <div class="tag-row">
+              <span class="tag">先价值</span>
+              <span class="tag">再边界</span>
+              <span class="tag">再流程</span>
+              <span class="tag">最后扩复杂度</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 7: CASE 1 SCENE
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">07</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">Chapter 3 / 案例一：客服问答 Skill</div>
+          <h2 class="section-title reveal reveal-delay-2">客服问答为什么适合先从 Skill 做起来</h2>
+          <p class="lead reveal reveal-delay-3">客服问答的核心目标不是“会推理”，而是“答得准、答得稳、覆盖常见问题”。知识边界通常比较清晰，流程也相对固定。</p>
+          <ul class="bullet-list reveal reveal-delay-4">
+            <li>这类问题更像稳定执行，而不是开放探索。</li>
+            <li>适合先抽成专用 Skill，而不是上来做通用复杂 Agent。</li>
+            <li>只要常见问题能持续命中，业务价值就已经很高。</li>
+          </ul>
+        </div>
+        <div class="quad-grid">
+          <div class="metric-box reveal-scale reveal-delay-2">
+            <div class="kicker">目标</div>
+            <div class="quote-large">答得准</div>
+            <p class="lead">比“回答花哨”更重要。</p>
+          </div>
+          <div class="metric-box reveal-scale reveal-delay-3">
+            <div class="kicker">边界</div>
+            <div class="quote-large">边界清</div>
+            <p class="lead">问题域可枚举、可维护。</p>
+          </div>
+          <div class="metric-box reveal-scale reveal-delay-4">
+            <div class="kicker">流程</div>
+            <div class="quote-large">流程稳</div>
+            <p class="lead">命中、回复、兜底都易定义。</p>
+          </div>
+          <div class="metric-box reveal-scale reveal-delay-5">
+            <div class="kicker">价值</div>
+            <div class="quote-large">见效快</div>
+            <p class="lead">适合先做业务验证闭环。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 8: REFERENCE FILES
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">08</div>
+      <div class="slide-content two-col">
+        <div class="notebook-sheet reveal-scale">
+          <div class="eyebrow">实现关键 / 知识承载</div>
+          <h2 class="section-title">reference 文件承载知识，不一定先上向量数据库</h2>
+          <ul class="bullet-list">
+            <li>如果知识规模可控、结构稳定，reference 文件就足以承载主要知识。</li>
+            <li>实现成本更低、维护更直接、排查问题更容易。</li>
+            <li>产品经理可以更快验证：知识组织方式到底是不是有效。</li>
+          </ul>
+        </div>
+        <div class="paper-card panel-strong reveal reveal-delay-3">
+          <div class="kicker">为什么这很重要</div>
+          <table class="comparison-table" aria-label="知识承载方式比较">
+            <thead>
+              <tr>
+                <th>方案</th>
+                <th>启动成本</th>
+                <th>维护透明度</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>reference 文件</strong></td>
+                <td><span class="score-good">低</span></td>
+                <td><span class="score-good">高</span></td>
+              </tr>
+              <tr>
+                <td><strong>向量数据库</strong></td>
+                <td><span class="score-mid">中-高</span></td>
+                <td><span class="score-mid">中</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="lead">对 PM 来说，这意味着可以先验证“知识组织”是否有效，而不是过早投入复杂基础设施。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 9: CASE 1 TAKEAWAY
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">09</div>
+      <div class="slide-content">
+        <div class="eyebrow reveal">Case 1 / 启发</div>
+        <h2 class="section-title reveal reveal-delay-2">这个案例的启发：先求可控，再求复杂</h2>
+        <div class="stat-grid">
+          <div class="paper-card reveal reveal-delay-2"><div class="stat-number">命中率</div><div class="stat-label">高频问题有没有稳定解决</div></div>
+          <div class="paper-card reveal reveal-delay-3"><div class="stat-number">维护成本</div><div class="stat-label">知识能不能被直接更新和追踪</div></div>
+          <div class="paper-card reveal reveal-delay-4"><div class="stat-number">迭代速度</div><div class="stat-label">能不能快速修正错误与补充覆盖</div></div>
+        </div>
+        <div class="two-col">
+          <div class="paper-card reveal reveal-delay-4">
+            <div class="kicker">第一阶段的目标</div>
+            <p class="lead">Skill 的第一价值是把高频问题稳定解决，而不是展示系统复杂度。简单方案只要足够支撑目标效果，就是更好的第一阶段方案。</p>
+          </div>
+          <div class="sticky-note reveal reveal-delay-5">
+            <h3>PM 的观察点</h3>
+            <p>优先关注命中率、维护成本、迭代速度、异常问题定位效率，而不是先被底层架构名词吸走注意力。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 10: CASE 2 COMPLEXITY
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">10</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">Chapter 4 / 案例二：前端 Slide 制作 Skill</div>
+          <h2 class="section-title reveal reveal-delay-2">为什么 Slide 制作比客服问答更复杂</h2>
+          <ul class="bullet-list reveal reveal-delay-3">
+            <li>它不只是回答问题，而是同时生成结构、内容、视觉和页面实现。</li>
+            <li>用户对结果的主观要求更高，质量波动也更明显。</li>
+            <li>这类任务更能体现：Skill 的边界定义和约束设计有多重要。</li>
+          </ul>
+        </div>
+        <div class="paper-card panel-strong reveal-scale reveal-delay-4">
+          <div class="kicker">复杂度来源</div>
+          <div class="three-col">
+            <div class="step-card"><div class="flow-no">S</div><h3>Structure</h3><p>章节是否完整、信息是否成故事。</p></div>
+            <div class="step-card"><div class="flow-no">V</div><h3>Visual</h3><p>视觉风格是否稳定、层级是否清楚。</p></div>
+            <div class="step-card"><div class="flow-no">H</div><h3>HTML</h3><p>页面是否可展示、可运行、可交付。</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 11: ITERATION OF A SKILL
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">11</div>
+      <div class="slide-content two-col">
+        <div class="paper-card panel-strong reveal-left">
+          <div class="kicker">多版本迭代的重点</div>
+          <div class="quote-large">重点不只是“模型更强”，而是“约束更清楚”。</div>
+          <p class="lead">每次迭代本质上都在解决具体问题：结构散、视觉弱、层级不清、页面不可用。</p>
+        </div>
+        <div class="quad-grid">
+          <div class="paper-card reveal reveal-delay-2"><div class="kicker">输入</div><p class="lead">输入格式更规范，减少模型自己猜任务。</p></div>
+          <div class="paper-card reveal reveal-delay-3"><div class="kicker">输出</div><p class="lead">输出结构更明确，方便 review 与继续加工。</p></div>
+          <div class="paper-card reveal reveal-delay-4"><div class="kicker">原则</div><p class="lead">设计原则更具体，避免“看起来都差不多”的泛化结果。</p></div>
+          <div class="paper-card reveal reveal-delay-5"><div class="kicker">失败模式</div><p class="lead">失败更可控，知道该怎么拆 slide、怎么防止溢出与不可用。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 12: PM PARTICIPATION
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">12</div>
+      <div class="slide-content">
+        <div class="eyebrow reveal">PM Role / 如何参与迭代</div>
+        <h2 class="section-title reveal reveal-delay-2">产品经理可以如何参与这种 Skill 打磨</h2>
+        <div class="process-flow">
+          <div class="flow-step reveal reveal-delay-2">
+            <div class="flow-no">1</div>
+            <h3>定义可用</h3>
+            <p>不是简单说“好不好看”，而是明确是否满足信息表达目标。</p>
+          </div>
+          <div class="flow-step reveal reveal-delay-3">
+            <div class="flow-no">2</div>
+            <h3>抽取负反馈模式</h3>
+            <p>结构散在哪、返工点在哪、哪些约束缺失，是最关键的输入。</p>
+          </div>
+          <div class="flow-step reveal reveal-delay-4">
+            <div class="flow-no">3</div>
+            <h3>建立评审标准</h3>
+            <p>结构完整性、内容准确性、视觉一致性、可交付性都要可判断。</p>
+          </div>
+          <div class="flow-step reveal reveal-delay-5">
+            <div class="flow-no">4</div>
+            <h3>推动迭代闭环</h3>
+            <p>让反馈回到 Skill 本身，而不是每次都靠人工兜住结果。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 13: WHY NOT ONE SHOT
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">13</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">Chapter 5 / 复杂任务与 Workflow</div>
+          <h2 class="section-title reveal reveal-delay-2">复杂任务为什么不适合一把生成到底</h2>
+          <ul class="bullet-list reveal reveal-delay-3">
+            <li>任务越复杂，目标越容易混杂：内容正确、结构清楚、形式合适、协作顺畅，往往不是同一层要求。</li>
+            <li>全部揉进一次生成，问题难定位、反馈难吸收、返工成本高。</li>
+            <li>一旦失败，很难判断是需求不清、Skill 不行，还是流程缺少中间确认。</li>
+          </ul>
+        </div>
+        <div class="paper-card panel-strong reveal-scale reveal-delay-4">
+          <div class="kicker">One-shot 的典型后果</div>
+          <table class="comparison-table" aria-label="一步生成与分阶段流程对比">
+            <thead>
+              <tr>
+                <th></th>
+                <th>一步生成</th>
+                <th>分阶段 Workflow</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>问题定位</strong></td>
+                <td><span class="score-warn">难</span></td>
+                <td><span class="score-good">清楚</span></td>
+              </tr>
+              <tr>
+                <td><strong>吸收反馈</strong></td>
+                <td><span class="score-warn">弱</span></td>
+                <td><span class="score-good">强</span></td>
+              </tr>
+              <tr>
+                <td><strong>返工成本</strong></td>
+                <td><span class="score-warn">高</span></td>
+                <td><span class="score-good">低</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 14: CONTROL POINTS
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">14</div>
+      <div class="slide-content two-col">
+        <div class="workflow-shell panel-strong reveal-scale">
+          <div class="kicker">Workflow 的优化价值</div>
+          <h2 class="section-title">把中间产物变成控制点</h2>
+          <p class="lead">比如先产出 outline，再做 slides；先 review 结构，再优化视觉。中间产物本身就是协作界面，也是质量控制节点。</p>
+          <div class="tag-row">
+            <span class="tag">outline</span>
+            <span class="tag">review</span>
+            <span class="tag">visual pass</span>
+            <span class="tag">delivery check</span>
+          </div>
+        </div>
+        <div class="process-flow">
+          <div class="flow-step reveal reveal-delay-2"><div class="flow-no">A</div><h3>先解决讲什么</h3><p>对齐结构和论点。</p></div>
+          <div class="flow-step reveal reveal-delay-3"><div class="flow-no">B</div><h3>再解决怎么呈现</h3><p>控制页面与视觉表达。</p></div>
+          <div class="flow-step reveal reveal-delay-4"><div class="flow-no">C</div><h3>再做协作修改</h3><p>让不同角色在正确节点介入。</p></div>
+          <div class="flow-step reveal reveal-delay-5"><div class="flow-no">D</div><h3>最后交付验收</h3><p>保证产物可展示、可复用、可交接。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 15: PM UNDERSTANDING OF WORKFLOW
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">15</div>
+      <div class="slide-content matrix-grid">
+        <div class="paper-card panel-strong reveal-scale">
+          <div class="kicker">用产品经理熟悉的机制理解 Workflow</div>
+          <table class="comparison-table" aria-label="Workflow 与 PM 机制映射">
+            <thead>
+              <tr>
+                <th>Workflow 环节</th>
+                <th>对应 PM 机制</th>
+                <th>作用</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>planning</strong></td>
+                <td>先明确目标和范围</td>
+                <td>减少任务误解，控制边界。</td>
+              </tr>
+              <tr>
+                <td><strong>task list</strong></td>
+                <td>把复杂任务拆成可执行单元</td>
+                <td>降低复杂度，方便分工。</td>
+              </tr>
+              <tr>
+                <td><strong>review</strong></td>
+                <td>关键节点确认方向</td>
+                <td>避免尾部大返工。</td>
+              </tr>
+              <tr>
+                <td><strong>pre-release check</strong></td>
+                <td>发布前检查</td>
+                <td>把结果变成真正可交付的产物。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="matrix-side">
+          <div class="quote-card reveal reveal-delay-3">
+            <div class="kicker">核心翻译</div>
+            <div class="quote-large">Workflow 不是技术炫技，而是把产品协作机制显式化。</div>
+          </div>
+          <div class="sticky-note reveal reveal-delay-4">
+            <h3>所以重点不是链路长</h3>
+            <p>而是每一段有没有明确职责、有没有中间产物、有没有可判断的控制点。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 16: CLOSING CASE
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">16</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">Chapter 6 / 完整收尾案例</div>
+          <h2 class="section-title reveal reveal-delay-2">这次分享的 Slide，本身就是一个 Workflow 产物</h2>
+          <ul class="bullet-list reveal reveal-delay-3">
+            <li>先基于分享目标和受众，生成结构化 outline。</li>
+            <li>再用 Frontend Slides Skill 把大纲转成可展示页面。</li>
+            <li>再结合 Feishu 协作进行补充、修改和对齐。</li>
+            <li>复杂交付物可以由多个清晰能力和阶段共同完成。</li>
+          </ul>
+        </div>
+        <div class="workflow-shell panel-strong reveal-scale reveal-delay-4">
+          <div class="kicker">实际流程</div>
+          <div class="process-flow">
+            <div class="flow-step"><div class="flow-no">1</div><h3>outline</h3><p>先解决讲什么、怎么讲。</p></div>
+            <div class="flow-step"><div class="flow-no">2</div><h3>slides</h3><p>再解决页面、内容与视觉实现。</p></div>
+            <div class="flow-step"><div class="flow-no">3</div><h3>review</h3><p>通过协作补齐问题、校准方向。</p></div>
+            <div class="flow-step"><div class="flow-no">4</div><h3>delivery</h3><p>得到可展示、可继续修改的成品。</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 17: WHY THIS FLOW IS STABLER
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">17</div>
+      <div class="slide-content two-col">
+        <div class="quote-card panel-strong reveal-left">
+          <div class="kicker">为什么更稳</div>
+          <div class="quote-large">各阶段职责清晰后，质量更容易提升，协作更容易展开。</div>
+        </div>
+        <div class="quad-grid">
+          <div class="paper-card reveal reveal-delay-2"><div class="kicker">大纲阶段</div><p class="lead">先解决“讲什么、怎么讲”的问题。</p></div>
+          <div class="paper-card reveal reveal-delay-3"><div class="kicker">页面阶段</div><p class="lead">再解决“怎么呈现得更好”的问题。</p></div>
+          <div class="paper-card reveal reveal-delay-4"><div class="kicker">协作阶段</div><p class="lead">解决“是否符合目标、是否需要修改”的问题。</p></div>
+          <div class="paper-card reveal reveal-delay-5"><div class="kicker">交付结果</div><p class="lead">每一步都可 review、可调整、可接力，整体风险更低。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 18: FINAL TAKEAWAY
+         =========================================== -->
+    <section class="slide">
+      <div class="route-line"></div>
+      <div class="slide-index">18</div>
+      <div class="slide-content two-col">
+        <div class="notebook-sheet reveal-scale">
+          <div class="eyebrow">Closing / takeaway</div>
+          <h2 class="headline">复杂问题不一定靠更长链路解决，而是靠更好的 Skill 拆分与 Workflow 设计</h2>
+          <p class="lead">对产品经理来说，理解 Agent 落地的关键，不是先学会最复杂的架构，而是学会判断：问题怎么拆、能力怎么封装、流程怎么协作。</p>
+          <div class="tag-row">
+            <span class="tag">从高频任务开始</span>
+            <span class="tag">先做可复用 Skill</span>
+            <span class="tag">复杂了再加 Workflow</span>
+          </div>
+        </div>
+        <div class="paper-card panel-strong reveal reveal-delay-3">
+          <div class="kicker">下一步建议</div>
+          <ul class="bullet-list">
+            <li>从一个高频、边界清晰的业务任务开始。</li>
+            <li>先做出可复用 Skill，跑通命中、维护、迭代闭环。</li>
+            <li>当任务复杂度上升，再增加中间确认与协作节点。</li>
+          </ul>
+          <p class="footer-note">Q&amp;A / 欢迎继续讨论：哪些 PM 场景最适合先从 Skill 切入。</p>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      /* ===========================================
+         SLIDE PRESENTATION CONTROLLER
+         Native scroll-snap navigation with animation-only observer
+         =========================================== */
+      class SlidePresentation {
+        constructor() {
+          this.slides = Array.from(document.querySelectorAll('.slide'));
+          this.currentSlide = 0;
+          this.touchStartY = 0;
+          this.touchDeltaY = 0;
+          this.navDotsContainer = document.querySelector('.nav-dots');
+          this.progressBar = document.querySelector('.progress-bar');
+          this.scrollHint = document.getElementById('scrollHint');
+          this.setupKeyboardNav();
+          this.setupTouchNav();
+          this.setupNavDots();
+          this.setupScrollTracking();
+          this.markFirstSlideVisible();
+          this.setupIntersectionObserver();
+          this.syncUi();
+        }
+
+        setupIntersectionObserver() {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+              }
+            });
+          }, { threshold: 0.35 });
+
+          this.slides.forEach((slide) => observer.observe(slide));
+        }
+
+        setupKeyboardNav() {
+          document.addEventListener('keydown', (event) => {
+            if (this.shouldIgnoreInput(event.target)) return;
+
+            if (['ArrowDown', 'PageDown', ' '].includes(event.key)) {
+              event.preventDefault();
+              this.goToSlide(this.currentSlide + 1);
+            } else if (['ArrowUp', 'PageUp'].includes(event.key)) {
+              event.preventDefault();
+              this.goToSlide(this.currentSlide - 1);
+            } else if (event.key === 'Home') {
+              event.preventDefault();
+              this.goToSlide(0);
+            } else if (event.key === 'End') {
+              event.preventDefault();
+              this.goToSlide(this.slides.length - 1);
+            }
+          });
+        }
+
+        setupTouchNav() {
+          document.addEventListener('touchstart', (event) => {
+            this.touchStartY = event.touches[0].clientY;
+            this.touchDeltaY = 0;
+          }, { passive: true });
+
+          document.addEventListener('touchmove', (event) => {
+            this.touchDeltaY = event.touches[0].clientY - this.touchStartY;
+          }, { passive: true });
+
+          document.addEventListener('touchend', () => {
+            if (Math.abs(this.touchDeltaY) < 50) return;
+            if (this.touchDeltaY < 0) {
+              this.goToSlide(this.currentSlide + 1);
+            } else {
+              this.goToSlide(this.currentSlide - 1);
+            }
+          });
+        }
+
+        setupNavDots() {
+          if (!this.navDotsContainer) return;
+          this.navDotsContainer.innerHTML = '';
+
+          this.slides.forEach((_, index) => {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'nav-dot';
+            dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+            dot.addEventListener('click', () => this.goToSlide(index));
+            this.navDotsContainer.appendChild(dot);
+          });
+
+          this.updateNavDots();
+        }
+
+        setupScrollTracking() {
+          const sync = () => {
+            this.syncUi();
+            this.updateScrollHint();
+          };
+
+          window.addEventListener('scroll', sync, { passive: true });
+          window.addEventListener('resize', sync);
+        }
+
+        markFirstSlideVisible() {
+          if (this.slides[0]) {
+            this.slides[0].classList.add('visible');
+          }
+        }
+
+        shouldIgnoreInput(target) {
+          if (!target) return false;
+          return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+        }
+
+        getNearestSlideIndex() {
+          const viewportCenter = window.innerHeight / 2;
+          let nearestIndex = 0;
+          let nearestDistance = Number.POSITIVE_INFINITY;
+
+          this.slides.forEach((slide, index) => {
+            const rect = slide.getBoundingClientRect();
+            const slideCenter = rect.top + rect.height / 2;
+            const distance = Math.abs(slideCenter - viewportCenter);
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestIndex = index;
+            }
+          });
+
+          return nearestIndex;
+        }
+
+        updateCurrentSlide() {
+          this.currentSlide = this.getNearestSlideIndex();
+        }
+
+        updateNavDots() {
+          if (!this.navDotsContainer) return;
+          const dots = Array.from(this.navDotsContainer.children);
+          dots.forEach((dot, index) => {
+            const isActive = index === this.currentSlide;
+            dot.classList.toggle('active', isActive);
+            dot.setAttribute('aria-current', isActive ? 'true' : 'false');
+          });
+        }
+
+        updateProgress() {
+          if (!this.progressBar) return;
+          const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+          const progress = Math.min(window.scrollY / maxScroll, 1);
+          this.progressBar.style.transform = `scaleX(${progress})`;
+        }
+
+        updateScrollHint() {
+          if (!this.scrollHint) return;
+          this.scrollHint.classList.toggle('hidden', window.scrollY > window.innerHeight * 0.35);
+        }
+
+        syncUi() {
+          this.updateCurrentSlide();
+          this.updateNavDots();
+          this.updateProgress();
+        }
+
+        goToSlide(index) {
+          const targetIndex = Math.max(0, Math.min(index, this.slides.length - 1));
+          const targetSlide = this.slides[targetIndex];
+          if (!targetSlide) return;
+
+          targetSlide.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          this.currentSlide = targetIndex;
+          this.syncUi();
+        }
+      }
+
+      new SlidePresentation();
+    </script>
+  </body>
+</html>
