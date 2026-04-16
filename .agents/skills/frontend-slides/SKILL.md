@@ -48,6 +48,30 @@ These invariants apply to EVERY slide in EVERY presentation:
 
 **When generating, read `viewport-base.css` and include its full contents in every presentation.**
 
+## Stability Invariants
+
+Generated presentations are judged first on reliability, then on aesthetics. Use these invariants every time:
+
+- Treat native document scrolling as the source of truth. Slides stack vertically in normal document flow and `scroll-snap` does the heavy lifting.
+- `IntersectionObserver` is for animation only. It may add `.visible`, but it must not own `currentSlide`, active nav dot state, or progress calculations.
+- `goToSlide(index)` should clamp the target index and only scroll the matching slide into view.
+- Derive the active slide from the real viewport position (for example, the slide closest to the viewport center), then sync nav dots and progress from that computed index.
+- Initialize state on load: mark the first slide visible as a fallback, then run current-slide, progress, and nav-dot sync once before user input.
+- If keyboard, wheel, or touch handlers are present, they must gracefully no-op while the user is typing or editing text inside `input`, `textarea`, `select`, or `[contenteditable="true"]`.
+- If custom wheel interception is used, do not mix passive wheel listeners with scripted slide jumps. Either rely on native scrolling, or explicitly intercept and throttle wheel events.
+- Missing optional UI should not break the deck. If `.nav-dots` or `.progress-bar` is absent, the controller should skip that feature without throwing.
+
+## Typography Safety Rules
+
+Beautiful typography is required, but readability and fit come first.
+
+- Always load web fonts with fallbacks. Every display/body font variable must end with a sensible fallback family.
+- Add `preconnect` for the chosen font host and use `display=swap` when supported so fallback rendering is acceptable while fonts load.
+- Large headings need enough vertical room. Keep display-heading `line-height` at `1.02-1.15`; never go below `1.0` for titles.
+- Avoid relying on extremely tight `max-width` values like `7ch` or `8ch` for major titles unless the title was manually tested with fallback fonts.
+- Long titles should be manually split across lines when natural, or moved to a dedicated slide. Do not let a headline overflow or disappear because the slide is `overflow: hidden`.
+- Do not use negative margins or inner wrappers with `overflow: hidden` around large headings unless you are intentionally creating a mask effect and have verified nothing is clipped.
+
 ### Content Density Limits Per Slide
 
 | Slide Type    | Maximum Content                                           |
@@ -190,6 +214,7 @@ If images were provided, the slide outline already incorporates them from Step 1
 - Use fonts from Fontshare or Google Fonts — never system fonts
 - Add detailed comments explaining each section
 - Every section needs a clear `/* === SECTION NAME === */` comment block
+- After generating, run `node scripts/validate-slides.js <presentation.html>` when Node is available. Fix any scroll, nav-dot, or typography warnings before delivery.
 
 ---
 
@@ -318,5 +343,6 @@ This captures each slide as a screenshot and combines them into a PDF. Perfect f
 | [html-template.md](html-template.md)               | HTML structure, JS features, code quality standards                  | Phase 3 (generation)      |
 | [animation-patterns.md](animation-patterns.md)     | CSS/JS animation snippets and effect-to-feeling guide                | Phase 3 (generation)      |
 | [scripts/extract-pptx.py](scripts/extract-pptx.py) | Python script for PPT content extraction                             | Phase 4 (conversion)      |
+| [scripts/validate-slides.js](scripts/validate-slides.js) | Static + runtime validation for scroll, nav dots, and typography | Phase 3 (before delivery) |
 | [scripts/deploy.sh](scripts/deploy.sh)             | Deploy slides to Vercel for instant sharing                          | Phase 6 (sharing)         |
 | [scripts/export-pdf.sh](scripts/export-pdf.sh)     | Export slides to PDF                                                 | Phase 6 (sharing)         |

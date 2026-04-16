@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent 主题分享 - version c</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      /* ===========================================
+         THEME TOKENS
+         Editorial atlas for product-facing agent share
+         =========================================== */
+      :root {
+        --bg-ivory: #f4efe5;
+        --bg-tint: #e5dccb;
+        --bg-deep: #13252a;
+        --paper: rgba(255, 251, 245, 0.84);
+        --paper-strong: rgba(255, 249, 241, 0.94);
+        --ink: #161513;
+        --ink-soft: rgba(22, 21, 19, 0.72);
+        --ink-muted: rgba(22, 21, 19, 0.46);
+        --teal: #1d5b63;
+        --rust: #b5532f;
+        --gold: #b88b4a;
+        --line: rgba(19, 37, 42, 0.14);
+        --line-strong: rgba(19, 37, 42, 0.22);
+        --shadow-soft: 0 22px 60px rgba(30, 36, 33, 0.09);
+        --font-display: "Cormorant Garamond", serif;
+        --font-body: "Manrope", sans-serif;
+        --font-mono: "IBM Plex Mono", monospace;
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        --duration-normal: 0.65s;
+        --duration-slow: 1s;
+        --title-size: clamp(1.5rem, 5vw, 4rem);
+        --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+        --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+        --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
+        --small-size: clamp(0.65rem, 1vw, 0.875rem);
+        --slide-padding: clamp(1rem, 4vw, 4rem);
+        --content-gap: clamp(0.5rem, 2vw, 2rem);
+        --element-gap: clamp(0.25rem, 1vw, 1rem);
+      }
+
+      /* ===========================================
+         RESET
+         =========================================== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* ===========================================
+         VIEWPORT FITTING: MANDATORY BASE STYLES
+         Include this ENTIRE file in every presentation.
+         These styles ensure slides fit exactly in the viewport.
+         =========================================== */
+
+      /* 1. Lock html/body to viewport */
+      html, body {
+        height: 100%;
+        overflow-x: hidden;
+      }
+
+      html {
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+      }
+
+      /* 2. Each slide = exact viewport height */
+      .slide {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        scroll-snap-align: start;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      /* 3. Content container with flex for centering */
+      .slide-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-height: 100%;
+        overflow: hidden;
+        padding: var(--slide-padding);
+      }
+
+      /* 4. ALL typography uses clamp() for responsive scaling */
+      :root {
+        --title-size: clamp(1.5rem, 5vw, 4rem);
+        --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+        --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+        --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
+        --small-size: clamp(0.65rem, 1vw, 0.875rem);
+        --slide-padding: clamp(1rem, 4vw, 4rem);
+        --content-gap: clamp(0.5rem, 2vw, 2rem);
+        --element-gap: clamp(0.25rem, 1vw, 1rem);
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.08;
+        text-wrap: balance;
+      }
+
+      p,
+      li {
+        line-height: 1.45;
+      }
+
+      /* 5. Cards/containers use viewport-relative max sizes */
+      .card, .container, .content-box {
+        max-width: min(90vw, 1000px);
+        max-height: min(80vh, 700px);
+      }
+
+      /* 6. Lists auto-scale with viewport */
+      .feature-list, .bullet-list {
+        gap: clamp(0.4rem, 1vh, 1rem);
+      }
+
+      .feature-list li, .bullet-list li {
+        font-size: var(--body-size);
+        line-height: 1.4;
+      }
+
+      /* 7. Grids adapt to available space */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+        gap: clamp(0.5rem, 1.5vw, 1rem);
+      }
+
+      /* 8. Images constrained to viewport */
+      img, .image-container {
+        max-width: 100%;
+        max-height: min(50vh, 400px);
+        object-fit: contain;
+      }
+
+      .headline,
+      .hero-title,
+      .section-title,
+      .chapter-title {
+        line-height: 1.08;
+      }
+
+      /* ===========================================
+         RESPONSIVE BREAKPOINTS
+         Aggressive scaling for smaller viewports
+         =========================================== */
+
+      @media (max-height: 700px) {
+        :root {
+          --slide-padding: clamp(0.75rem, 3vw, 2rem);
+          --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+          --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+          --h2-size: clamp(1rem, 3vw, 1.75rem);
+        }
+      }
+
+      @media (max-height: 600px) {
+        :root {
+          --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+          --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+          --title-size: clamp(1.1rem, 4vw, 2rem);
+          --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+        }
+
+        .nav-dots, .keyboard-hint, .decorative {
+          display: none;
+        }
+      }
+
+      @media (max-height: 500px) {
+        :root {
+          --slide-padding: clamp(0.4rem, 2vw, 1rem);
+          --title-size: clamp(1rem, 3.5vw, 1.5rem);
+          --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+          --body-size: clamp(0.65rem, 1vw, 0.85rem);
+        }
+      }
+
+      @media (max-width: 600px) {
+        :root {
+          --title-size: clamp(1.25rem, 7vw, 2.5rem);
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ===========================================
+         REDUCED MOTION
+         Respect user preferences
+         =========================================== */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.2s !important;
+        }
+
+        html {
+          scroll-behavior: auto;
+        }
+      }
+
+      /* ===========================================
+         GLOBAL ATMOSPHERE
+         =========================================== */
+      body {
+        background:
+          radial-gradient(circle at 18% 12%, rgba(184, 139, 74, 0.18), transparent 22%),
+          radial-gradient(circle at 82% 18%, rgba(29, 91, 99, 0.12), transparent 22%),
+          linear-gradient(135deg, #f5efe3 0%, #ece3d2 44%, #ddd1bb 100%);
+        color: var(--ink);
+        font-family: var(--font-body);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(19, 37, 42, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(19, 37, 42, 0.06) 1px, transparent 1px);
+        background-size: clamp(32px, 4vw, 56px) clamp(32px, 4vw, 56px);
+        opacity: 0.42;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.75), transparent 96%);
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.12), transparent 16%, transparent 84%, rgba(19, 37, 42, 0.06)),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 24%, transparent 82%, rgba(19, 37, 42, 0.05));
+      }
+
+      .progress-bar {
+        position: fixed;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, var(--rust), var(--gold), var(--teal));
+        transform-origin: left center;
+        transform: scaleX(0);
+        z-index: 9999;
+      }
+
+      .nav-dots {
+        position: fixed;
+        right: clamp(10px, 1.2vw, 18px);
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 999;
+      }
+
+      .nav-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        border: 1px solid rgba(19, 37, 42, 0.28);
+        background: rgba(255, 255, 255, 0.56);
+        transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+        cursor: pointer;
+      }
+
+      .nav-dot.active {
+        background: var(--rust);
+        border-color: var(--rust);
+        transform: scale(1.2);
+      }
+
+      .scroll-hint {
+        position: fixed;
+        left: clamp(14px, 2vw, 26px);
+        bottom: clamp(12px, 2vw, 24px);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.58rem 0.82rem;
+        border: 1px solid var(--line-strong);
+        background: rgba(255, 251, 245, 0.72);
+        color: var(--ink-soft);
+        font-size: var(--small-size);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-soft);
+        z-index: 998;
+        transition: opacity 0.28s ease, transform 0.28s ease;
+      }
+
+      .scroll-hint.hidden {
+        opacity: 0;
+        transform: translateY(10px);
+        pointer-events: none;
+      }
+
+      .scroll-hint strong {
+        font-family: var(--font-display);
+        font-size: clamp(0.88rem, 1vw, 1rem);
+        color: var(--teal);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .scroll-hint .hint-arrow {
+        width: 1rem;
+        height: 1rem;
+        border-right: 2px solid var(--rust);
+        border-bottom: 2px solid var(--rust);
+        transform: rotate(45deg);
+        animation: hint-bob 1.8s ease-in-out infinite;
+      }
+
+      @keyframes hint-bob {
+        0%, 100% {
+          transform: rotate(45deg) translate(0, 0);
+        }
+        50% {
+          transform: rotate(45deg) translate(4px, 4px);
+        }
+      }
+
+      /* ===========================================
+         TYPOGRAPHY AND LAYOUT SYSTEM
+         =========================================== */
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-family: var(--font-mono);
+        font-size: clamp(0.66rem, 0.95vw, 0.86rem);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--teal);
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: clamp(1rem, 2.4vw, 2rem);
+        height: 1px;
+        background: linear-gradient(90deg, var(--rust), transparent);
+      }
+
+      .slide-index {
+        position: absolute;
+        top: clamp(16px, 2vw, 28px);
+        right: clamp(18px, 3vw, 42px);
+        font-family: var(--font-display);
+        font-size: clamp(1.5rem, 4vw, 4.1rem);
+        color: rgba(19, 37, 42, 0.12);
+        line-height: 0.86;
+      }
+
+      .headline {
+        font-family: var(--font-display);
+        font-size: clamp(2.2rem, 5.9vw, 5.4rem);
+        line-height: 0.96;
+        letter-spacing: -0.04em;
+        max-width: 10ch;
+      }
+
+      .section-title {
+        font-family: var(--font-display);
+        font-size: clamp(1.75rem, 3.8vw, 3.35rem);
+        line-height: 0.98;
+        letter-spacing: -0.035em;
+        max-width: 12ch;
+      }
+
+      .lead {
+        font-size: clamp(0.86rem, 1.48vw, 1.14rem);
+        line-height: 1.7;
+        color: var(--ink-soft);
+        max-width: 62ch;
+      }
+
+      .muted {
+        color: var(--ink-muted);
+      }
+
+      .accent-rule {
+        width: min(24vw, 220px);
+        height: 0.24rem;
+        background: linear-gradient(90deg, var(--rust), var(--gold));
+      }
+
+      .panel {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow-soft);
+        backdrop-filter: blur(12px);
+      }
+
+      .panel-strong {
+        background: var(--paper-strong);
+        border: 1px solid var(--line-strong);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(0.42rem, 0.8vw, 0.62rem) clamp(0.72rem, 1vw, 1rem);
+        border: 1px solid rgba(181, 83, 47, 0.36);
+        color: var(--rust);
+        font-family: var(--font-mono);
+        font-size: clamp(0.68rem, 0.9vw, 0.86rem);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .title-grid,
+      .two-col {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: clamp(1rem, 2.3vw, 2rem);
+        align-items: stretch;
+        height: 100%;
+      }
+
+      .three-col {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.8rem, 1.5vw, 1.2rem);
+      }
+
+      .quad-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(0.8rem, 1.4vw, 1.15rem);
+      }
+
+      .hero-side,
+      .quote-panel,
+      .card,
+      .demo-card,
+      .summary-card,
+      .principle-card,
+      .decision-card {
+        padding: clamp(0.95rem, 1.6vw, 1.35rem);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .card-title {
+        font-family: var(--font-mono);
+        font-size: clamp(0.7rem, 0.88vw, 0.84rem);
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: var(--rust);
+        margin-bottom: 0.45rem;
+      }
+
+      .hero-side {
+        gap: clamp(0.8rem, 1.3vw, 1rem);
+      }
+
+      .hero-side .big-quote,
+      .quote-panel .big-quote {
+        max-width: 11ch;
+      }
+
+      .big-quote {
+        font-family: var(--font-display);
+        font-size: clamp(1.45rem, 3vw, 3rem);
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+      }
+
+      .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(0.7rem, 1vw, 0.9rem);
+      }
+
+      .mini-tile {
+        padding: clamp(0.68rem, 0.95vw, 0.9rem);
+        border-top: 3px solid var(--teal);
+      }
+
+      .mini-tile strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: clamp(1rem, 1.35vw, 1.3rem);
+        margin-bottom: 0.2rem;
+      }
+
+      .bullet-list {
+        list-style: none;
+        display: grid;
+        margin-top: clamp(0.9rem, 1.5vw, 1.2rem);
+      }
+
+      .bullet-list li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: clamp(0.55rem, 0.9vw, 0.8rem);
+        align-items: start;
+        color: var(--ink-soft);
+      }
+
+      .bullet-list li::before {
+        content: "//";
+        font-family: var(--font-mono);
+        color: var(--teal);
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.75rem, 1.2vw, 1rem);
+        margin-top: clamp(1rem, 1.6vw, 1.35rem);
+      }
+
+      .stat-card {
+        padding: clamp(0.92rem, 1.35vw, 1.2rem);
+        border-top: 4px solid var(--rust);
+        min-height: clamp(8rem, 17vh, 9.5rem);
+      }
+
+      .stat-card strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: clamp(1.6rem, 2vw, 2rem);
+        margin-bottom: 0.25rem;
+      }
+
+      .flow-rail {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(0.65rem, 1vw, 0.92rem);
+        margin-top: clamp(1rem, 1.6vw, 1.3rem);
+      }
+
+      .flow-step {
+        padding: clamp(0.82rem, 1.1vw, 1rem);
+        min-height: clamp(7.1rem, 16vh, 8.4rem);
+        border-top: 3px solid var(--gold);
+      }
+
+      .flow-step span {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: clamp(0.68rem, 0.82vw, 0.8rem);
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--teal);
+        margin-bottom: 0.42rem;
+      }
+
+      .timeline {
+        display: grid;
+        gap: clamp(0.68rem, 1.05vw, 0.95rem);
+        margin-top: clamp(0.95rem, 1.4vw, 1.2rem);
+      }
+
+      .timeline-item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: clamp(0.72rem, 1vw, 0.95rem);
+        align-items: start;
+      }
+
+      .timeline-no {
+        width: clamp(1.9rem, 2.3vw, 2.35rem);
+        height: clamp(1.9rem, 2.3vw, 2.35rem);
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--rust), var(--gold));
+        color: #fffaf4;
+        font-family: var(--font-mono);
+        font-size: clamp(0.72rem, 0.9vw, 0.84rem);
+      }
+
+      .timeline-body {
+        color: var(--ink-soft);
+      }
+
+      .timeline-body strong {
+        display: block;
+        margin-bottom: 0.15rem;
+        font-family: var(--font-display);
+        font-size: clamp(1rem, 1.35vw, 1.28rem);
+        color: var(--ink);
+      }
+
+      .code-frame {
+        border: 1px solid var(--line-strong);
+        background: rgba(253, 249, 242, 0.94);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .code-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.78rem 0.98rem;
+        border-bottom: 1px solid var(--line);
+        font-size: var(--small-size);
+        color: var(--ink-muted);
+      }
+
+      .code-dots {
+        display: inline-flex;
+        gap: 0.34rem;
+      }
+
+      .code-dots span {
+        width: 0.58rem;
+        height: 0.58rem;
+        border-radius: 50%;
+        background: var(--rust);
+      }
+
+      .code-dots span:nth-child(2) {
+        background: var(--gold);
+      }
+
+      .code-dots span:nth-child(3) {
+        background: var(--teal);
+      }
+
+      pre {
+        margin: 0;
+        padding: clamp(0.95rem, 1.55vw, 1.28rem);
+        font-family: var(--font-mono);
+        font-size: clamp(0.66rem, 0.9vw, 0.82rem);
+        line-height: 1.62;
+        white-space: pre-wrap;
+        color: #17343a;
+      }
+
+      .token-key { color: var(--rust); }
+      .token-value { color: var(--ink); font-weight: 700; }
+      .token-comment { color: #7b756a; }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity var(--duration-normal) var(--ease-out-expo),
+          transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .slide.visible .reveal {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .slide.visible .reveal-delay-2 { transition-delay: 0.12s; }
+      .slide.visible .reveal-delay-3 { transition-delay: 0.22s; }
+      .slide.visible .reveal-delay-4 { transition-delay: 0.32s; }
+      .slide.visible .reveal-delay-5 { transition-delay: 0.42s; }
+
+      .chapter-accent {
+        position: absolute;
+        inset: auto 0 0 auto;
+        width: clamp(7rem, 16vw, 16rem);
+        height: clamp(7rem, 16vw, 16rem);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(29, 91, 99, 0.16), transparent 68%);
+        pointer-events: none;
+      }
+
+      .demo-slide .slide-content {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .demo-shell {
+        width: min(78vw, 820px);
+        padding: clamp(1.3rem, 2.6vw, 2rem);
+        border: 1px solid var(--line-strong);
+        background: rgba(255, 250, 244, 0.78);
+        box-shadow: var(--shadow-soft);
+        display: grid;
+        gap: clamp(0.9rem, 1.4vw, 1.1rem);
+      }
+
+      .demo-title {
+        font-family: var(--font-display);
+        font-size: clamp(2.1rem, 5vw, 4.4rem);
+        line-height: 0.98;
+      }
+
+      .demo-subtitle {
+        font-size: clamp(0.95rem, 1.5vw, 1.18rem);
+        color: var(--ink-soft);
+      }
+
+      .demo-tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.6rem;
+      }
+
+      .demo-tag {
+        padding: 0.45rem 0.75rem;
+        border: 1px solid rgba(29, 91, 99, 0.18);
+        background: rgba(255, 255, 255, 0.56);
+        font-family: var(--font-mono);
+        font-size: clamp(0.68rem, 0.85vw, 0.8rem);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--teal);
+      }
+
+      @media (max-width: 920px) {
+        .title-grid,
+        .two-col,
+        .three-col,
+        .flow-rail,
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .quad-grid,
+        .mini-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .scroll-hint {
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        .scroll-hint.hidden {
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress-bar" aria-hidden="true"></div>
+    <nav class="nav-dots" aria-label="Slide navigation"></nav>
+    <div class="scroll-hint" id="scrollHint" aria-hidden="true">
+      <span class="hint-arrow"></span>
+      <span><strong>Scroll</strong> or use arrow keys</span>
+    </div>
+
+    <section class="slide">
+      <div class="slide-index">01</div>
+      <div class="chapter-accent"></div>
+      <div class="slide-content">
+        <div class="title-grid">
+          <div>
+            <div class="eyebrow reveal">Internal share / product audience</div>
+            <h1 class="headline reveal reveal-delay-2">Agent 不是功能点，是新的执行界面</h1>
+            <div class="accent-rule reveal reveal-delay-3"></div>
+            <p class="lead reveal reveal-delay-4">
+              这次分享面向产品同学，重点不放在模型原理，而是回答一个更实际的问题：怎么把 Agent 做成稳定、可复用、可交付的产品能力。
+            </p>
+          </div>
+          <div class="hero-side panel reveal reveal-delay-5">
+            <div class="pill">Version C / Editorial Atlas</div>
+            <div class="big-quote">从意图出发，到结果交付，中间是一整套可设计的系统。</div>
+            <div class="mini-grid">
+              <div class="mini-tile panel-strong">
+                <strong>Agent</strong>
+                <p>理解目标，拆任务，选择动作。</p>
+              </div>
+              <div class="mini-tile panel-strong">
+                <strong>Skill</strong>
+                <p>把高频问题沉淀成标准能力。</p>
+              </div>
+              <div class="mini-tile panel-strong">
+                <strong>CLI</strong>
+                <p>让 Agent 真正进到工作现场。</p>
+              </div>
+              <div class="mini-tile panel-strong">
+                <strong>Workflow</strong>
+                <p>把一次成功串成稳定产线。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">02</div>
+      <div class="slide-content">
+        <div class="eyebrow reveal">Agenda</div>
+        <h2 class="section-title reveal reveal-delay-2">今天会一起看什么</h2>
+        <div class="stat-grid">
+          <div class="stat-card panel reveal reveal-delay-2">
+            <strong>01</strong>
+            <p>什么是 Agent，以及它为什么不是聊天框的简单升级。</p>
+          </div>
+          <div class="stat-card panel reveal reveal-delay-3">
+            <strong>02</strong>
+            <p>Skill、CLI、Workflow 在产品体系里分别扮演什么角色。</p>
+          </div>
+          <div class="stat-card panel reveal reveal-delay-4">
+            <strong>03</strong>
+            <p>稳定性为什么是 Agent 产品能不能落地的分水岭。</p>
+          </div>
+        </div>
+        <ul class="bullet-list reveal reveal-delay-5">
+          <li>中间穿插 4 个 demo 页面：skill、cli-server、workflow、稳定性。</li>
+          <li>整体行文尽量简洁，重点建立一套产品判断框架。</li>
+          <li>听完后希望大家知道：什么时候该做 skill，什么时候该上 workflow。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">03</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">1 / What is agent</div>
+          <h2 class="section-title reveal reveal-delay-2">什么是 Agent</h2>
+          <p class="lead reveal reveal-delay-3">
+            Agent 的关键，不是“会回答”，而是“会推进”。用户输入的是目标，系统自己判断下一步该做什么，直到交付一个可以使用的结果。
+          </p>
+          <ul class="bullet-list reveal reveal-delay-4">
+            <li>传统 AI 偏向一次性输出；Agent 偏向连续执行。</li>
+            <li>它会结合上下文，主动拆分子任务，而不是等用户手把手下指令。</li>
+            <li>它依赖工具与反馈回路，不只是一个 prompt 包装层。</li>
+            <li>产品价值来自“缩短从意图到结果的距离”。</li>
+          </ul>
+        </div>
+        <div class="quote-panel panel-strong reveal reveal-delay-5">
+          <div class="card-title">Product lens</div>
+          <div class="big-quote">Agent 是围绕任务组织的一种新交互，而不是一个更大的输入框。</div>
+          <p class="lead muted">所以在产品设计上，要关注目标、动作、状态、反馈和验收，而不只是回答质量。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">04</div>
+      <div class="slide-content">
+        <div class="eyebrow reveal">1 / Anatomy</div>
+        <h2 class="section-title reveal reveal-delay-2">从产品视角拆开 Agent</h2>
+        <div class="flow-rail">
+          <div class="flow-step panel reveal reveal-delay-2">
+            <span>Context</span>
+            <p>先理解用户是谁、目标是什么、约束和成功标准是什么。</p>
+          </div>
+          <div class="flow-step panel reveal reveal-delay-3">
+            <span>Reason</span>
+            <p>把复杂目标拆成若干步骤，并动态决定最合理的路径。</p>
+          </div>
+          <div class="flow-step panel reveal reveal-delay-4">
+            <span>Act</span>
+            <p>调用工具、读取资产、执行命令、产出中间结果。</p>
+          </div>
+          <div class="flow-step panel reveal reveal-delay-5">
+            <span>Verify</span>
+            <p>检查结果可用性，再决定结束、重试还是继续迭代。</p>
+          </div>
+        </div>
+        <p class="lead reveal reveal-delay-5" style="margin-top: clamp(1rem, 1.6vw, 1.3rem);">
+          PM 真正设计的不是一句 prompt，而是 context、tooling、feedback、guardrail 一起组成的执行系统。
+        </p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">05</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">2 / Skill</div>
+          <h2 class="section-title reveal reveal-delay-2">Skill 的作用</h2>
+          <p class="lead reveal reveal-delay-3">
+            Skill 可以理解成 Agent 的“压缩能力包”。它把高频任务里的最佳做法、触发条件、操作顺序和边界条件，提前写成一份标准作业指导书。
+          </p>
+          <ul class="bullet-list reveal reveal-delay-4">
+            <li>什么时候触发、适合解决什么问题，都在 skill 里提前定义。</li>
+            <li>把领域知识和易错点前置，减少临场探索成本。</li>
+            <li>让通用 Agent 在特定问题上更像专家，而不是即兴发挥。</li>
+            <li>对产品来说，skill 是最适合规模化沉淀经验的单元。</li>
+          </ul>
+        </div>
+        <div class="code-frame reveal reveal-delay-5">
+          <div class="code-head">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span>skill = reusable expertise</span>
+          </div>
+          <pre><span class="token-comment"># 一个典型 skill 会明确这几件事</span>
+<span class="token-key">trigger</span>: <span class="token-value">什么意图触发</span>
+<span class="token-key">scope</span>: <span class="token-value">解决什么问题</span>
+<span class="token-key">workflow</span>: <span class="token-value">先看什么 / 再做什么 / 怎么验收</span>
+<span class="token-key">guardrail</span>: <span class="token-value">边界、禁区、风险点</span>
+<span class="token-key">output</span>: <span class="token-value">最后应该给用户什么</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide demo-slide">
+      <div class="slide-index">06</div>
+      <div class="slide-content">
+        <div class="demo-shell panel reveal reveal-delay-2">
+          <div class="eyebrow" style="justify-content: center;">Demo</div>
+          <div class="demo-title">Demo for Skill</div>
+          <div class="demo-subtitle">这里保留为演示切换页，你可以直接切出浏览器做 live demo。</div>
+          <div class="demo-tags">
+            <span class="demo-tag">trigger intent</span>
+            <span class="demo-tag">load skill</span>
+            <span class="demo-tag">standard output</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">07</div>
+      <div class="slide-content">
+        <div class="eyebrow reveal">3 / Decision</div>
+        <h2 class="section-title reveal reveal-delay-2">大部分情况下 skill 就够用了</h2>
+        <div class="three-col">
+          <div class="decision-card panel reveal reveal-delay-2">
+            <div class="card-title">高频</div>
+            <p>问题重复度高，比如读文档、生成 slide、查表、改文案、做结构化分析。</p>
+          </div>
+          <div class="decision-card panel reveal reveal-delay-3">
+            <div class="card-title">窄域</div>
+            <p>输入输出相对稳定，边界清晰，不需要跨很多系统或长链路协作。</p>
+          </div>
+          <div class="decision-card panel reveal reveal-delay-4">
+            <div class="card-title">可控</div>
+            <p>只要加上规则、模板和工具约束，就能把成功率拉到足够高。</p>
+          </div>
+        </div>
+        <ul class="bullet-list reveal reveal-delay-5">
+          <li>从 ROI 看，skill 往往是最先值得做的：开发快、见效快、复用性强。</li>
+          <li>先做 20 个高频 skill，通常比直接追求“万能 Agent”更快跑出价值。</li>
+          <li>只有当任务开始跨角色、跨系统、跨时间节点时，workflow 的必要性才会上升。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">08</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">4 / CLI</div>
+          <h2 class="section-title reveal reveal-delay-2">CLI 的作用</h2>
+          <p class="lead reveal reveal-delay-3">
+            CLI 可以把它理解成 Agent 的动作接口层。没有 CLI，Agent 只能“告诉你怎么做”；有了 CLI，Agent 才能“直接替你做完”。
+          </p>
+          <ul class="bullet-list reveal reveal-delay-4">
+            <li>读文件、改文件、跑脚本、执行命令，都是可组合、可自动化的动作。</li>
+            <li>对于内部效率场景尤其关键，因为大量资产本来就在代码库和脚本系统里。</li>
+            <li>CLI 的价值不在界面，而在于给 Agent 一双可执行的手。</li>
+          </ul>
+        </div>
+        <div class="quote-panel panel-strong reveal reveal-delay-5">
+          <div class="card-title">Simple contrast</div>
+          <div class="big-quote">没有 CLI，AI 停在建议层；有 CLI，AI 才进入交付层。</div>
+          <p class="lead muted">所以 CLI 不是补充能力，而是让 Agent 从“会说”到“会做”的关键桥梁。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide demo-slide">
+      <div class="slide-index">09</div>
+      <div class="slide-content">
+        <div class="demo-shell panel reveal reveal-delay-2">
+          <div class="eyebrow" style="justify-content: center;">Demo</div>
+          <div class="demo-title">Demo for cli-server</div>
+          <div class="demo-subtitle">这里保留为演示切换页，适合现场展示 read / edit / run / verify。</div>
+          <div class="demo-tags">
+            <span class="demo-tag">read</span>
+            <span class="demo-tag">edit</span>
+            <span class="demo-tag">run</span>
+            <span class="demo-tag">verify</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">10</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">5 / Workflow</div>
+          <h2 class="section-title reveal reveal-delay-2">Workflow 自动化</h2>
+          <p class="lead reveal reveal-delay-3">
+            单点能力做成，不等于可以稳定交付。Workflow 的作用，是把多个 skill、多类工具和多个判断点组织成一条可以持续复跑的链路。
+          </p>
+          <ul class="bullet-list reveal reveal-delay-4">
+            <li>Workflow 关注的不只是“会不会做”，而是“能不能持续做对”。</li>
+            <li>它需要处理状态流转、失败重试、人工介入点和上下游依赖。</li>
+            <li>它更像业务流程设计，而不是单个能力设计。</li>
+          </ul>
+        </div>
+        <div class="panel reveal reveal-delay-5">
+          <div class="card-title">一句话理解</div>
+          <div class="big-quote">Workflow = 把 Agent 能力编排成一条可追踪、可治理、可复跑的业务链路。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide demo-slide">
+      <div class="slide-index">11</div>
+      <div class="slide-content">
+        <div class="demo-shell panel reveal reveal-delay-2">
+          <div class="eyebrow" style="justify-content: center;">Demo</div>
+          <div class="demo-title">Demo for Workflow</div>
+          <div class="demo-subtitle">这里保留为演示切换页，适合展示从输入收集到结果回传的链路。</div>
+          <div class="demo-tags">
+            <span class="demo-tag">collect</span>
+            <span class="demo-tag">route</span>
+            <span class="demo-tag">check</span>
+            <span class="demo-tag">handoff</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">12</div>
+      <div class="slide-content">
+        <div class="eyebrow reveal">5 / Example</div>
+        <h2 class="section-title reveal reveal-delay-2">一个典型 Workflow 会怎么工作</h2>
+        <div class="timeline reveal reveal-delay-3">
+          <div class="timeline-item">
+            <div class="timeline-no">1</div>
+            <div class="timeline-body"><strong>输入收集</strong>读 PRD、看文档、拉历史上下文，先把任务补齐。</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-no">2</div>
+            <div class="timeline-body"><strong>能力路由</strong>命中合适的 skill 或工具，产出中间结果。</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-no">3</div>
+            <div class="timeline-body"><strong>自动验证</strong>跑检查、看错误、评估结果是否达标。</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-no">4</div>
+            <div class="timeline-body"><strong>人工接管</strong>如果风险高、结果模糊或冲突，就把决策权交还给人。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">13</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">6 / Stability</div>
+          <h2 class="section-title reveal reveal-delay-2">稳定性设计</h2>
+          <p class="lead reveal reveal-delay-3">
+            Agent 产品真正难的，不是偶尔做对，而是大部分时候都做得足够对。稳定性设计，本质上是在管理不确定性。
+          </p>
+          <ul class="bullet-list reveal reveal-delay-4">
+            <li>输入不确定：用户表达常常缺信息、含糊、矛盾。</li>
+            <li>过程不确定：模型有随机性，工具会失败，环境会变化。</li>
+            <li>标准不确定：很多结果不是简单的对错，而是主观阈值。</li>
+          </ul>
+        </div>
+        <div class="panel-strong principle-card reveal reveal-delay-5">
+          <div class="card-title">Core principle</div>
+          <div class="big-quote">不是消灭不确定性，而是把不确定性收敛到产品可接受范围内。</div>
+          <p class="lead muted">因此稳定性不是补充项，而是 Agent 体验的底盘。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">14</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">6 / Guardrails</div>
+          <h2 class="section-title reveal reveal-delay-2">稳定性设计的 4 个抓手</h2>
+          <div class="timeline reveal reveal-delay-3">
+            <div class="timeline-item">
+              <div class="timeline-no">1</div>
+              <div class="timeline-body"><strong>边界</strong>清楚定义什么时候能做、什么时候不能做。</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-no">2</div>
+              <div class="timeline-body"><strong>分层</strong>先 skill，后 workflow，再决定是否需要更通用 Agent。</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-no">3</div>
+              <div class="timeline-body"><strong>验证</strong>每个关键步骤都有检查点，而不是只看最终输出。</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-no">4</div>
+              <div class="timeline-body"><strong>兜底</strong>失败时可重试、可降级、可求助人工，而不是静默出错。</div>
+            </div>
+          </div>
+        </div>
+        <div class="code-frame reveal reveal-delay-5">
+          <div class="code-head">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span>stability mindset</span>
+          </div>
+          <pre><span class="token-comment"># 一套简单但实用的 guardrail 逻辑</span>
+if <span class="token-key">input_missing</span>:
+  <span class="token-value">ask_or_infer_defaults()</span>
+elif <span class="token-key">high_risk_action</span>:
+  <span class="token-value">require_confirmation()</span>
+else:
+  <span class="token-value">execute_safe_steps()</span>
+
+<span class="token-value">verify_each_step()</span>
+<span class="token-value">retry_or_fallback()</span>
+<span class="token-value">return_clear_status()</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide demo-slide">
+      <div class="slide-index">15</div>
+      <div class="slide-content">
+        <div class="demo-shell panel reveal reveal-delay-2">
+          <div class="eyebrow" style="justify-content: center;">Demo</div>
+          <div class="demo-title">Demo for 稳定性</div>
+          <div class="demo-subtitle">这里保留为演示切换页，适合展示 ask、verify、fallback、human-in-the-loop。</div>
+          <div class="demo-tags">
+            <span class="demo-tag">ask</span>
+            <span class="demo-tag">verify</span>
+            <span class="demo-tag">fallback</span>
+            <span class="demo-tag">handoff</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">16</div>
+      <div class="slide-content">
+        <div class="eyebrow reveal">Wrap-up</div>
+        <h2 class="section-title reveal reveal-delay-2">最后用 3 句话收束</h2>
+        <div class="timeline reveal reveal-delay-3">
+          <div class="timeline-item">
+            <div class="timeline-no">1</div>
+            <div class="timeline-body"><strong>Agent</strong>让交互从“告诉系统怎么做”变成“告诉系统要什么结果”。</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-no">2</div>
+            <div class="timeline-body"><strong>Skill</strong>是高频任务最实用的落地方式，先把经验做成产品能力。</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-no">3</div>
+            <div class="timeline-body"><strong>Workflow + 稳定性</strong>决定这套能力能不能从 demo 走向真实业务价值。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-index">17</div>
+      <div class="slide-content two-col">
+        <div>
+          <div class="eyebrow reveal">Q & A</div>
+          <h2 class="headline reveal reveal-delay-2">问答环节</h2>
+          <p class="lead reveal reveal-delay-3">
+            如果今天只记住一件事，希望是这句：Agent 产品的竞争力，不只在模型，而在 how to make it reliably useful。
+          </p>
+        </div>
+        <div class="panel reveal reveal-delay-4">
+          <div class="card-title">可以继续聊</div>
+          <ul class="bullet-list">
+            <li>哪些 PM 场景最适合先做成 skill？</li>
+            <li>workflow 的成功指标应该怎么定义？</li>
+            <li>稳定性要求怎么写进 PRD 和验收标准？</li>
+            <li>什么时候需要 human-in-the-loop？</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      /* ===========================================
+         SLIDE PRESENTATION CONTROLLER
+         Keyboard, touch, progress, and dot navigation
+         =========================================== */
+      class SlidePresentation {
+        constructor() {
+          this.slides = Array.from(document.querySelectorAll('.slide'));
+          this.currentSlide = 0;
+          this.touchStartY = 0;
+          this.touchDeltaY = 0;
+          this.navDotsContainer = document.querySelector('.nav-dots');
+          this.progressBar = document.querySelector('.progress-bar');
+          this.scrollHint = document.getElementById('scrollHint');
+          this.setupIntersectionObserver();
+          this.setupKeyboardNav();
+          this.setupTouchNav();
+          this.setupNavDots();
+          this.setupScrollTracking();
+          this.markFirstSlideVisible();
+          this.syncUi();
+        }
+
+        setupIntersectionObserver() {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add('visible');
+                }
+              });
+            },
+            { threshold: 0.35 },
+          );
+
+          this.slides.forEach((slide) => observer.observe(slide));
+        }
+
+        setupKeyboardNav() {
+          document.addEventListener('keydown', (event) => {
+            if (this.shouldIgnoreInput(event.target)) return;
+
+            if (['ArrowDown', 'PageDown', ' '].includes(event.key)) {
+              event.preventDefault();
+              this.goToSlide(this.currentSlide + 1);
+            } else if (['ArrowUp', 'PageUp'].includes(event.key)) {
+              event.preventDefault();
+              this.goToSlide(this.currentSlide - 1);
+            } else if (event.key === 'Home') {
+              event.preventDefault();
+              this.goToSlide(0);
+            } else if (event.key === 'End') {
+              event.preventDefault();
+              this.goToSlide(this.slides.length - 1);
+            }
+          });
+        }
+
+        setupTouchNav() {
+          document.addEventListener(
+            'touchstart',
+            (event) => {
+              this.touchStartY = event.touches[0].clientY;
+              this.touchDeltaY = 0;
+            },
+            { passive: true },
+          );
+
+          document.addEventListener(
+            'touchmove',
+            (event) => {
+              this.touchDeltaY = event.touches[0].clientY - this.touchStartY;
+            },
+            { passive: true },
+          );
+
+          document.addEventListener('touchend', () => {
+            if (Math.abs(this.touchDeltaY) < 50) return;
+            if (this.touchDeltaY < 0) {
+              this.goToSlide(this.currentSlide + 1);
+            } else {
+              this.goToSlide(this.currentSlide - 1);
+            }
+          });
+        }
+
+        setupNavDots() {
+          if (!this.navDotsContainer) return;
+          this.navDotsContainer.innerHTML = '';
+
+          this.slides.forEach((_, index) => {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'nav-dot';
+            dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+            dot.addEventListener('click', () => this.goToSlide(index));
+            this.navDotsContainer.appendChild(dot);
+          });
+
+          this.updateNavDots();
+        }
+
+        setupScrollTracking() {
+          const sync = () => {
+            this.syncUi();
+            this.updateScrollHint();
+          };
+
+          window.addEventListener('scroll', sync, { passive: true });
+          window.addEventListener('resize', sync);
+        }
+
+        markFirstSlideVisible() {
+          if (this.slides[0]) {
+            this.slides[0].classList.add('visible');
+          }
+        }
+
+        shouldIgnoreInput(target) {
+          if (!target) return false;
+          return Boolean(
+            target.closest('input, textarea, select, [contenteditable="true"]'),
+          );
+        }
+
+        getNearestSlideIndex() {
+          const viewportCenter = window.innerHeight / 2;
+          let nearestIndex = 0;
+          let nearestDistance = Number.POSITIVE_INFINITY;
+
+          this.slides.forEach((slide, index) => {
+            const rect = slide.getBoundingClientRect();
+            const slideCenter = rect.top + rect.height / 2;
+            const distance = Math.abs(slideCenter - viewportCenter);
+
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestIndex = index;
+            }
+          });
+
+          return nearestIndex;
+        }
+
+        updateCurrentSlide() {
+          this.currentSlide = this.getNearestSlideIndex();
+        }
+
+        updateNavDots() {
+          if (!this.navDotsContainer) return;
+          const dots = Array.from(this.navDotsContainer.children);
+          dots.forEach((dot, index) => {
+            const isActive = index === this.currentSlide;
+            dot.classList.toggle('active', isActive);
+            dot.setAttribute('aria-current', isActive ? 'true' : 'false');
+          });
+        }
+
+        updateProgress() {
+          if (!this.progressBar) return;
+          const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+          const progress = Math.min(window.scrollY / maxScroll, 1);
+          this.progressBar.style.transform = `scaleX(${progress})`;
+        }
+
+        updateScrollHint() {
+          if (!this.scrollHint) return;
+          this.scrollHint.classList.toggle('hidden', window.scrollY > window.innerHeight * 0.35);
+        }
+
+        syncUi() {
+          this.updateCurrentSlide();
+          this.updateNavDots();
+          this.updateProgress();
+        }
+
+        goToSlide(index) {
+          const targetIndex = Math.max(0, Math.min(index, this.slides.length - 1));
+          const targetSlide = this.slides[targetIndex];
+          if (!targetSlide) return;
+
+          targetSlide.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+
+          this.currentSlide = targetIndex;
+          this.updateNavDots();
+        }
+      }
+
+      new SlidePresentation();
+    </script>
+  </body>
+</html>

@@ -13,6 +13,8 @@ Reference architecture for generating slide presentations. Every presentation fo
     <title>Presentation Title</title>
 
     <!-- Fonts: use Fontshare or Google Fonts — never system fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=..." />
 
     <style>
@@ -30,8 +32,8 @@ Reference architecture for generating slide presentations. Every presentation fo
         --accent-glow: rgba(0, 255, 204, 0.3);
 
         /* Typography — MUST use clamp() */
-        --font-display: "Clash Display", sans-serif;
-        --font-body: "Satoshi", sans-serif;
+        --font-display: "Clash Display", "Arial Black", sans-serif;
+        --font-body: "Satoshi", "Helvetica Neue", Arial, sans-serif;
         --title-size: clamp(2rem, 6vw, 5rem);
         --subtitle-size: clamp(0.875rem, 2vw, 1.25rem);
         --body-size: clamp(0.75rem, 1.2vw, 1rem);
@@ -71,6 +73,13 @@ Reference architecture for generating slide presentations. Every presentation fo
       .slide.visible .reveal {
         opacity: 1;
         transform: translateY(0);
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.08;
+        text-wrap: balance;
       }
 
       /* Stagger children for sequential reveal */
@@ -118,38 +127,197 @@ Reference architecture for generating slide presentations. Every presentation fo
            =========================================== */
       class SlidePresentation {
         constructor() {
-          this.slides = document.querySelectorAll(".slide");
+          this.slides = Array.from(document.querySelectorAll(".slide"));
           this.currentSlide = 0;
+          this.isAnimating = false;
+          this.touchStartY = 0;
+          this.touchDeltaY = 0;
+          this.navDotsContainer = document.querySelector(".nav-dots");
+          this.progressBar = document.querySelector(".progress-bar");
           this.setupIntersectionObserver();
           this.setupKeyboardNav();
           this.setupTouchNav();
           this.setupProgressBar();
           this.setupNavDots();
+          this.setupScrollTracking();
+          this.markFirstSlideVisible();
+          this.syncUi();
         }
 
         setupIntersectionObserver() {
-          // Add .visible class when slides enter viewport
-          // Triggers CSS animations efficiently
+          // Observer is animation-only.
+          // It may add .visible, but should not own currentSlide state.
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add("visible");
+                }
+              });
+            },
+            {
+              threshold: 0.35,
+            },
+          );
+
+          this.slides.forEach((slide) => observer.observe(slide));
         }
 
         setupKeyboardNav() {
-          // Arrow keys, Space, Page Up/Down
+          // Arrow keys, Space, Page Up/Down, Home, End.
+          document.addEventListener("keydown", (event) => {
+            if (this.shouldIgnoreInput(event.target)) return;
+
+            if (["ArrowDown", "PageDown", " "].includes(event.key)) {
+              event.preventDefault();
+              this.goToSlide(this.currentSlide + 1);
+            } else if (["ArrowUp", "PageUp"].includes(event.key)) {
+              event.preventDefault();
+              this.goToSlide(this.currentSlide - 1);
+            } else if (event.key === "Home") {
+              event.preventDefault();
+              this.goToSlide(0);
+            } else if (event.key === "End") {
+              event.preventDefault();
+              this.goToSlide(this.slides.length - 1);
+            }
+          });
         }
 
         setupTouchNav() {
-          // Touch/swipe support for mobile
+          // Touch/swipe support for mobile.
+          document.addEventListener(
+            "touchstart",
+            (event) => {
+              this.touchStartY = event.touches[0].clientY;
+              this.touchDeltaY = 0;
+            },
+            { passive: true },
+          );
+
+          document.addEventListener(
+            "touchmove",
+            (event) => {
+              this.touchDeltaY = event.touches[0].clientY - this.touchStartY;
+            },
+            { passive: true },
+          );
+
+          document.addEventListener("touchend", () => {
+            if (Math.abs(this.touchDeltaY) < 50) return;
+            if (this.touchDeltaY < 0) {
+              this.goToSlide(this.currentSlide + 1);
+            } else {
+              this.goToSlide(this.currentSlide - 1);
+            }
+          });
         }
 
         setupProgressBar() {
-          // Update progress bar on scroll
+          // Progress should be based on actual scroll distance.
+          this.updateProgress();
         }
 
         setupNavDots() {
           // IMPORTANT: Always clear before building — if outerHTML was
           // captured while dots were rendered, re-opening the file would
           // append a duplicate set on top of the existing ones.
+          if (!this.navDotsContainer) return;
           this.navDotsContainer.innerHTML = "";
-          // Generate and manage navigation dots
+
+          this.slides.forEach((_, index) => {
+            const dot = document.createElement("button");
+            dot.type = "button";
+            dot.className = "nav-dot";
+            dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+            dot.addEventListener("click", () => this.goToSlide(index));
+            this.navDotsContainer.appendChild(dot);
+          });
+
+          this.updateNavDots();
+        }
+
+        setupScrollTracking() {
+          const sync = () => this.syncUi();
+          window.addEventListener("scroll", sync, { passive: true });
+          window.addEventListener("resize", sync);
+        }
+
+        markFirstSlideVisible() {
+          if (this.slides[0]) {
+            this.slides[0].classList.add("visible");
+          }
+        }
+
+        shouldIgnoreInput(target) {
+          if (!target) return false;
+          return Boolean(
+            target.closest(
+              'input, textarea, select, [contenteditable="true"]',
+            ),
+          );
+        }
+
+        getNearestSlideIndex() {
+          const viewportCenter = window.innerHeight / 2;
+          let nearestIndex = 0;
+          let nearestDistance = Number.POSITIVE_INFINITY;
+
+          this.slides.forEach((slide, index) => {
+            const rect = slide.getBoundingClientRect();
+            const slideCenter = rect.top + rect.height / 2;
+            const distance = Math.abs(slideCenter - viewportCenter);
+
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestIndex = index;
+            }
+          });
+
+          return nearestIndex;
+        }
+
+        updateCurrentSlide() {
+          this.currentSlide = this.getNearestSlideIndex();
+        }
+
+        updateNavDots() {
+          if (!this.navDotsContainer) return;
+          const dots = Array.from(this.navDotsContainer.children);
+          dots.forEach((dot, index) => {
+            dot.classList.toggle("active", index === this.currentSlide);
+            dot.setAttribute("aria-current", index === this.currentSlide ? "true" : "false");
+          });
+        }
+
+        updateProgress() {
+          if (!this.progressBar) return;
+          const maxScroll = Math.max(
+            1,
+            document.documentElement.scrollHeight - window.innerHeight,
+          );
+          const progress = Math.min(window.scrollY / maxScroll, 1);
+          this.progressBar.style.transform = `scaleX(${progress})`;
+        }
+
+        syncUi() {
+          this.updateCurrentSlide();
+          this.updateNavDots();
+          this.updateProgress();
+        }
+
+        goToSlide(index) {
+          const targetIndex = Math.max(0, Math.min(index, this.slides.length - 1));
+          const targetSlide = this.slides[targetIndex];
+          if (!targetSlide) return;
+
+          targetSlide.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+
+          this.currentSlide = targetIndex;
+          this.updateNavDots();
         }
       }
 
@@ -171,8 +339,26 @@ Every presentation must include:
    - Navigation dots
 
 2. **Intersection Observer** — For scroll-triggered animations:
-   - Add `.visible` class when slides enter viewport
-   - Trigger CSS transitions efficiently
+    - Add `.visible` class when slides enter viewport
+    - Trigger CSS transitions efficiently
+    - Do not let the observer own `currentSlide`; scroll position is the source of truth
+
+### Navigation Stability Rules
+
+- Use native vertical document scrolling with `scroll-snap`; do not absolutely position all slides into one fixed viewport.
+- Compute the active slide from actual viewport geometry, then sync progress bar and active dot from that computed index.
+- `goToSlide()` should only clamp and scroll to the target slide.
+- If you add wheel interception, it must be intentional, throttled, and skipped while typing/editing. Otherwise prefer native wheel scrolling.
+- On startup, explicitly mark the first slide `.visible` so the first screen is never blank if the observer has not fired yet.
+- Build nav dots from the real `.slide` list and clear the container before re-rendering.
+
+### Typography Safety Rules
+
+- Load fonts with preconnect links and readable fallbacks.
+- Keep large title `line-height` at or above `1.0`; `1.02-1.15` is the safe range for most display faces.
+- Prefer balanced multi-line titles over clipped single-line hero text.
+- If a title only works because of a very tight `ch` width, retune the font-size clamp or split the slide instead.
+- Avoid negative margins and unnecessary inner `overflow: hidden` around heading wrappers.
 
 3. **Optional Enhancements** (match to chosen style):
    - Custom cursor with trail

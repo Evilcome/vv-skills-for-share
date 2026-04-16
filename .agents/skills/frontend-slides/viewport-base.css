@@ -55,6 +55,18 @@ html {
     --element-gap: clamp(0.25rem, 1vw, 1rem);
 }
 
+h1,
+h2,
+h3 {
+    line-height: 1.08;
+    text-wrap: balance;
+}
+
+p,
+li {
+    line-height: 1.45;
+}
+
 /* 5. Cards/containers use viewport-relative max sizes */
 .card, .container, .content-box {
     max-width: min(90vw, 1000px);
@@ -83,6 +95,13 @@ img, .image-container {
     max-width: 100%;
     max-height: min(50vh, 400px);
     object-fit: contain;
+}
+
+.headline,
+.hero-title,
+.section-title,
+.chapter-title {
+    line-height: 1.08;
 }
 
 /* ===========================================

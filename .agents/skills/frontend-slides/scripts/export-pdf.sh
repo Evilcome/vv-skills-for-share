@@ -261,13 +261,13 @@ for (let i = 0; i < slideCount; i++) {
   // Wait for intersection observer animations to trigger
   await page.waitForTimeout(200);
 
-  // Force all .reveal elements on the current slide to be visible
-  // (animations normally trigger on scroll/intersection, but we need them visible now)
+  // Force animated content on the current slide to be visible.
+  // Some decks use alternate reveal class names, so support the common variants.
   await page.evaluate((index) => {
     const slides = document.querySelectorAll('.slide');
     const currentSlide = slides[index];
     if (currentSlide) {
-      currentSlide.querySelectorAll('.reveal').forEach(el => {
+      currentSlide.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-blur').forEach(el => {
         el.style.opacity = '1';
         el.style.transform = 'none';
         el.style.visibility = 'visible';
